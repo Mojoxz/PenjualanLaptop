@@ -45,174 +45,541 @@ $user = query("SELECT * FROM tb_user WHERE user_id = $user_id")[0];
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
 <style>
         :root {
-            --primary-color: #0d6efd;
-            --secondary-color: #6c757d;
-            --hover-color: #0a58ca;
-        }
+    --primary-color: #4361ee;
+    --primary-gradient: linear-gradient(135deg, #4361ee, #3a0ca3);
+    --secondary-color: #3a0ca3;
+    --accent-color: #4cc9f0;
+    --hover-color: #3b82f6;
+    --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+    --card-hover-shadow: 0 15px 30px rgba(67, 97, 238, 0.15);
+    --border-radius: 16px;
+    --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
 
-        body {
-            background-color: #f8f9fa;
-        }
+body {
+    background-color: #f8fafc;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    padding-bottom: 30px;
+}
 
-        .navbar {
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            background: linear-gradient(45deg, #0d6efd, #0dcaf0) !important;
-        }
+/* Navbar Enhanced */
+.navbar {
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1);
+    background: var(--primary-gradient) !important;
+    padding: 15px 0;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
 
-        .navbar-brand {
-            font-weight: 600;
-        }
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.35rem;
+    letter-spacing: -0.5px;
+    position: relative;
+}
 
-        .product-image {
-            width: 100%;
-            height: 200px;
-            object-fit: contain;
-            border: none;
-            padding: 15px;
-            background: #f8f9fa;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
+.navbar-brand::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 50%;
+    height: 3px;
+    background: white;
+    border-radius: 5px;
+    opacity: 0;
+    transform: translateY(5px);
+    transition: var(--transition);
+}
 
-        .product-card {
-            border-radius: 15px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            height: 100%;
-        }
+.navbar-brand:hover::after {
+    opacity: 1;
+    transform: translateY(0);
+    width: 100%;
+}
 
-        .product-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-        }
+.navbar-nav .nav-link {
+    font-weight: 500;
+    padding: 8px 16px;
+    margin: 0 3px;
+    border-radius: 8px;
+    transition: var(--transition);
+}
 
-        .card-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
+.navbar-nav .nav-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
 
-        .card {
-            border-radius: 15px;
-            border: none;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            margin-bottom: 30px;
-        }
+.navbar-nav .nav-link.active {
+    background: rgba(255, 255, 255, 0.2);
+    font-weight: 600;
+}
 
-        .form-select {
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            padding: 12px;
-            transition: all 0.3s ease;
-        }
+/* Badge Enhancement */
+.badge {
+    font-weight: 600;
+    padding: 0.4em 0.75em;
+    border-radius: 6px;
+    position: relative;
+    top: -3px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
 
-        .form-select:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(13,110,253,0.15);
-        }
+/* Dropdown Animation */
+.dropdown-menu {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    animation: slideDown 0.3s ease forwards;
+    transform-origin: top center;
+    padding: 10px;
+}
 
-        .btn-primary {
-            background: linear-gradient(45deg, #0d6efd, #0dcaf0);
-            border: none;
-            border-radius: 10px;
-            padding: 8px 16px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(13,110,253,0.2);
-        }
+.dropdown-item {
+    border-radius: 8px;
+    padding: 8px 16px;
+    transition: var(--transition);
+}
 
-        .badge {
-            font-weight: 500;
-            padding: 8px 12px;
-        }
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+    transform: translateX(5px);
+}
 
-        .input-group-text {
-            border: 2px solid #e9ecef;
-            background: #f8f9fa;
-            border-radius: 10px 0 0 10px;
-        }
+.dropdown-item i {
+    transition: var(--transition);
+}
 
-        .input-group .form-control {
-            border: 2px solid #e9ecef;
-            border-radius: 0 10px 10px 0;
-        }
+.dropdown-item:hover i {
+    transform: scale(1.2);
+}
 
-        .modal-content {
-            border-radius: 20px;
-            border: none;
-            overflow: hidden;
-        }
+/* Filter Section Enhanced */
+.card {
+    border-radius: var(--border-radius);
+    border: none;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition);
+    overflow: hidden;
+}
 
-        .modal-header {
-            background: linear-gradient(45deg, #0d6efd, #0dcaf0);
-            color: white;
-            border: none;
-            padding: 15px 20px;
-        }
+.form-select, .form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 12px 15px;
+    transition: var(--transition);
+    box-shadow: none;
+    font-size: 0.95rem;
+}
 
-        .btn-close {
-            filter: brightness(0) invert(1);
-        }
+.form-select:focus, .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.15);
+}
 
-        .modal-body img {
-            border-radius: 15px;
-            max-height: 80vh;
-            object-fit: contain;
-        }
+.form-select option:checked {
+    background: var(--primary-color);
+    color: white;
+}
 
-        .dropdown-menu {
-            border-radius: 12px;
-            border: none;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
+/* Custom Select Style */
+.form-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%234361ee' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right 0.75rem center;
+    background-size: 12px;
+}
 
-        /* Styles untuk description container */
-        .description-container {
-            position: relative;
-            margin-bottom: 1rem;
-        }
+/* Button Enhancement */
+.btn-primary {
+    background: var(--primary-gradient);
+    border: none;
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-weight: 600;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
 
-        .description-text {
-            transition: max-height 0.3s ease-out;
-            overflow: hidden;
-            line-height: 1.5;
-        }
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #3a0ca3, #4361ee);
+    transition: var(--transition);
+    z-index: -1;
+    opacity: 0;
+}
 
-        .description-text.collapsed {
-            max-height: 4.5em; /* Sekitar 3 baris */
-        }
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(67, 97, 238, 0.25);
+}
 
-        .description-text.expanded {
-            max-height: none;
-        }
+.btn-primary:hover::before {
+    opacity: 1;
+}
 
-        .btn-link {
-            color: var(--primary-color);
-            padding: 0;
-            font-size: 0.9rem;
-            text-decoration: none;
-            background: none;
-            border: none;
-            cursor: pointer;
-            display: inline-block;
-            margin-top: 5px;
-        }
+.btn-primary i {
+    transition: var(--transition);
+}
 
-        .btn-link:hover {
-            color: var(--hover-color);
-            text-decoration: underline;
-        }
+.btn-primary:hover i {
+    transform: translateX(3px);
+}
 
-        .card-body {
-            padding: 1.25rem;
-            display: flex;
-            flex-direction: column;
-        }
+/* Product Card Enhanced */
+.product-card {
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    transition: var(--transition);
+    position: relative;
+    z-index: 1;
+    background: white;
+}
+
+.product-card::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    z-index: -1;
+    background: var(--primary-gradient);
+    border-radius: calc(var(--border-radius) + 5px);
+    opacity: 0;
+    transition: var(--transition);
+    transform: scale(0.98);
+}
+
+.product-card:hover {
+    transform: translateY(-15px);
+    box-shadow: var(--card-hover-shadow);
+}
+
+.product-card:hover::before {
+    opacity: 0.7;
+    transform: scale(1);
+}
+
+.product-image {
+    width: 100%;
+    height: 200px;
+    object-fit: contain;
+    background: #f8f9fa;
+    transition: var(--transition);
+    transform-origin: center;
+}
+
+.product-card:hover .product-image {
+    transform: scale(1.05);
+}
+
+.card-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 10px;
+    transition: var(--transition);
+}
+
+.product-card:hover .card-title {
+    color: var(--primary-color);
+}
+
+/* Product Tag Icons */
+.card-body small i {
+    color: var(--primary-color);
+    transition: var(--transition);
+}
+
+.product-card:hover .card-body small i {
+    transform: scale(1.2);
+}
+
+/* Price Styling */
+.fw-bold.text-primary {
+    font-size: 1.25rem;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
+    padding: 5px 0;
+}
+
+/* Quantity Input Enhancement */
+.input-group-text {
+    border: 2px solid #e9ecef;
+    background: #f8f9fa;
+    border-radius: 12px 0 0 12px;
+    padding: 0.375rem 0.75rem;
+}
+
+.input-group .form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 0 12px 12px 0;
+}
+
+.input-group-sm .form-control,
+.input-group-sm .input-group-text {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.75rem;
+}
+
+.input-group .form-control:focus {
+    z-index: 3;
+}
+
+/* Category & Brand Tags */
+.text-muted {
+    display: inline-block;
+    font-size: 0.85rem;
+    color: #64748b !important;
+    transition: var(--transition);
+}
+
+.product-card:hover .text-muted {
+    color: #334155 !important;
+}
+
+/* Limited Stock Badge */
+.badge.bg-warning {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
+    color: #7c2d12 !important;
+    font-size: 0.75rem;
+    padding: 0.5em 0.75em;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(251, 191, 36, 0.3);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Description Toggle Animation */
+.description-container {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.description-text {
+    transition: max-height 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    overflow: hidden;
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+.description-text.collapsed {
+    max-height: 4.8em;
+}
+
+.description-text.expanded {
+    max-height: 500px;
+}
+
+.btn-link {
+    color: var(--primary-color);
+    padding: 0;
+    font-size: 0.9rem;
+    text-decoration: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: inline-block;
+    margin-top: 5px;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.btn-link:hover {
+    color: var(--secondary-color);
+    transform: translateY(-2px);
+}
+
+.btn-link::after {
+    content: '';
+    display: block;
+    width: 0;
+    height: 2px;
+    background: var(--primary-color);
+    transition: width 0.3s;
+}
+
+.btn-link:hover::after {
+    width: 100%;
+}
+
+/* Add to Cart Button Enhanced */
+.cart-form .btn-primary {
+    margin-top: 5px;
+    position: relative;
+}
+
+.cart-form .btn-primary i {
+    transition: transform 0.3s ease;
+}
+
+.cart-form .btn-primary:hover i {
+    animation: bounce 0.5s ease infinite alternate;
+}
+
+@keyframes bounce {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-3px);
+    }
+}
+
+/* Modal Enhancement */
+.modal-content {
+    border-radius: 24px;
+    border: none;
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    padding: 1.25rem 1.5rem;
+}
+
+.modal-title {
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+    transition: var(--transition);
+}
+
+.btn-close:hover {
+    opacity: 1;
+    transform: rotate(90deg);
+}
+
+.modal-body img {
+    border-radius: 16px;
+    max-height: 70vh;
+    object-fit: contain;
+    transition: var(--transition);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Animation for Page Load */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.row > .col {
+    opacity: 0;
+    animation: fadeIn 0.5s ease forwards;
+}
+
+/* Staggered animation for cards */
+.row > .col:nth-child(1) { animation-delay: 0.1s; }
+.row > .col:nth-child(2) { animation-delay: 0.2s; }
+.row > .col:nth-child(3) { animation-delay: 0.3s; }
+.row > .col:nth-child(4) { animation-delay: 0.4s; }
+.row > .col:nth-child(5) { animation-delay: 0.5s; }
+.row > .col:nth-child(6) { animation-delay: 0.6s; }
+.row > .col:nth-child(7) { animation-delay: 0.7s; }
+.row > .col:nth-child(8) { animation-delay: 0.8s; }
+
+/* Hover-Specific Animations */
+.product-card .btn-primary {
+    transition: var(--transition);
+}
+
+.product-card:hover .btn-primary {
+    background: linear-gradient(135deg, #3a0ca3, #4361ee);
+}
+
+/* Out of Stock Button */
+.btn-secondary {
+    background: #94a3b8;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.btn-secondary:disabled {
+    background: #cbd5e1;
+    color: #475569;
+    opacity: 0.9;
+    cursor: not-allowed;
+}
+
+/* Media Queries for Better Responsiveness */
+@media (max-width: 767.98px) {
+    .product-image {
+        height: 180px;
+    }
+    
+    .card-title {
+        font-size: 1.1rem;
+    }
+    
+    .navbar {
+        padding: 10px 0;
+    }
+    
+    .fw-bold.text-primary {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .product-card:hover {
+        transform: translateY(-10px);
+    }
+    
+    .badge.bg-warning {
+        font-size: 0.7rem;
+        padding: 0.4em 0.6em;
+    }
+}
     </style>
 </head>
 <body>
@@ -386,62 +753,291 @@ $user = query("SELECT * FROM tb_user WHERE user_id = $user_id")[0];
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Function untuk menampilkan modal gambar
-        function showImageModal(title, src) {
-            const modalLabel = document.getElementById('imageModalLabel');
-            const modalImg = document.getElementById('imageModalImg');
-            
-            modalLabel.textContent = title;
-            modalImg.src = src;
-            modalImg.alt = title;
-            
-            const modal = new bootstrap.Modal(document.getElementById('imageModal'));
-            modal.show();
-        }
+        // Function untuk menampilkan modal gambar dengan animasi
+function showImageModal(title, src) {
+    const modalLabel = document.getElementById('imageModalLabel');
+    const modalImg = document.getElementById('imageModalImg');
+    
+    modalLabel.textContent = title;
+    modalImg.src = src;
+    modalImg.alt = title;
+    
+    const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+    modal.show();
+    
+    // Tambahkan animasi zoom-in pada gambar
+    setTimeout(() => {
+        modalImg.classList.add('zoom-effect');
+    }, 100);
+    
+    // Reset animasi saat modal ditutup
+    document.getElementById('imageModal').addEventListener('hidden.bs.modal', function () {
+        modalImg.classList.remove('zoom-effect');
+    });
+}
 
-        // Event listener untuk toggle description
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.toggle-description').forEach(button => {
-                button.addEventListener('click', function() {
-                    const descId = this.getAttribute('data-id');
-                    const descElement = document.getElementById('desc-' + descId);
-                    const isExpanded = this.getAttribute('data-expanded') === 'true';
-                    
-                    if (!isExpanded) {
-                        // Expand
-                        descElement.classList.remove('collapsed');
-                        descElement.classList.add('expanded');
-                        this.textContent = 'Lihat lebih sedikit';
-                        this.setAttribute('data-expanded', 'true');
-                    } else {
-                        // Collapse
-                        descElement.classList.remove('expanded');
-                        descElement.classList.add('collapsed');
-                        this.textContent = 'Selengkapnya';
-                        this.setAttribute('data-expanded', 'false');
-                    }
-                });
-            });
+// Event listener untuk toggle description dengan animasi
+document.addEventListener('DOMContentLoaded', function() {
+    // Kategori hover effect
+    const categorySelect = document.querySelector('select[name="kategori"]');
+    const brandSelect = document.querySelector('select[name="merk"]');
+    
+    if (categorySelect) {
+        categorySelect.addEventListener('mouseover', function() {
+            this.classList.add('select-hover');
         });
+        categorySelect.addEventListener('mouseout', function() {
+            this.classList.remove('select-hover');
+        });
+    }
+    
+    if (brandSelect) {
+        brandSelect.addEventListener('mouseover', function() {
+            this.classList.add('select-hover');
+        });
+        brandSelect.addEventListener('mouseout', function() {
+            this.classList.remove('select-hover');
+        });
+    }
+    
+    // Animasi untuk tombol filter saat hover
+    const filterBtn = document.querySelector('button[type="submit"]');
+    if (filterBtn) {
+        filterBtn.addEventListener('mouseover', function() {
+            this.querySelector('i').classList.add('rotate-icon');
+        });
+        filterBtn.addEventListener('mouseout', function() {
+            this.querySelector('i').classList.remove('rotate-icon');
+        });
+    }
+    
+    // Animasi untuk toggle description
+    document.querySelectorAll('.toggle-description').forEach(button => {
+        button.addEventListener('click', function() {
+            const descId = this.getAttribute('data-id');
+            const descElement = document.getElementById('desc-' + descId);
+            const isExpanded = this.getAttribute('data-expanded') === 'true';
+            
+            if (!isExpanded) {
+                // Expand dengan animasi
+                descElement.classList.remove('collapsed');
+                descElement.classList.add('expanded');
+                this.textContent = 'Lihat lebih sedikit';
+                this.setAttribute('data-expanded', 'true');
+                this.classList.add('expanded-state');
+            } else {
+                // Collapse dengan animasi
+                descElement.classList.remove('expanded');
+                descElement.classList.add('collapsed');
+                this.textContent = 'Selengkapnya';
+                this.setAttribute('data-expanded', 'false');
+                this.classList.remove('expanded-state');
+            }
+        });
+    });
 
-        // Event listener untuk validasi form
-        document.querySelectorAll('.cart-form').forEach(form => {
-            form.addEventListener('submit', function(e) {
-                const qtyInput = this.querySelector('input[name="qty"]');
-                const qty = parseInt(qtyInput.value);
-                const max = parseInt(qtyInput.getAttribute('max'));
+    // Animasi hover untuk card product
+    document.querySelectorAll('.product-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.classList.add('card-hover');
+        });
+        card.addEventListener('mouseleave', function() {
+            this.classList.remove('card-hover');
+        });
+    });
 
+    // Event listener untuk validasi form dengan UI feedback
+    document.querySelectorAll('.cart-form').forEach(form => {
+        const qtyInput = form.querySelector('input[name="qty"]');
+        
+        if (qtyInput) {
+            // Tambahkan pemberitahuan visual saat input berubah
+            qtyInput.addEventListener('input', function() {
+                const qty = parseInt(this.value);
+                const max = parseInt(this.getAttribute('max'));
+                
                 if (qty < 1) {
-                    e.preventDefault();
-                    alert('Jumlah minimal pembelian adalah 1');
-                    qtyInput.value = 1;
+                    this.classList.add('is-invalid');
                 } else if (qty > max) {
-                    e.preventDefault();
-                    alert(`Jumlah maksimal pembelian adalah ${max}`);
-                    qtyInput.value = max;
+                    this.classList.add('is-invalid');
+                } else {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                    
+                    // Hapus class is-valid setelah beberapa detik
+                    setTimeout(() => {
+                        this.classList.remove('is-valid');
+                    }, 2000);
                 }
             });
+        }
+        
+        form.addEventListener('submit', function(e) {
+            if (!qtyInput) return;
+            
+            const qty = parseInt(qtyInput.value);
+            const max = parseInt(qtyInput.getAttribute('max'));
+
+            if (qty < 1) {
+                e.preventDefault();
+                showToast('Jumlah minimal pembelian adalah 1', 'warning');
+                qtyInput.value = 1;
+                qtyInput.focus();
+            } else if (qty > max) {
+                e.preventDefault();
+                showToast(`Jumlah maksimal pembelian adalah ${max}`, 'warning');
+                qtyInput.value = max;
+                qtyInput.focus();
+            } else {
+                // Tambahkan animasi untuk tombol
+                const submitBtn = this.querySelector('button[type="submit"]');
+                submitBtn.innerHTML = '<i class="bi bi-check2-circle me-2"></i>Menambahkan...';
+                submitBtn.classList.add('btn-adding');
+                
+                // Animasi opsional: ini akan mengembalikan label asli jika form tidak di-submit
+                setTimeout(() => {
+                    if (!this.classList.contains('submitted')) {
+                        submitBtn.innerHTML = '<i class="bi bi-cart-plus me-2"></i>Tambah ke Keranjang';
+                        submitBtn.classList.remove('btn-adding');
+                    }
+                }, 2000);
+                
+                this.classList.add('submitted');
+            }
         });
+    });
+    
+    // Tambahkan efek hover pada menu dropdown
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            this.querySelector('i').classList.add('icon-hover');
+        });
+        
+        item.addEventListener('mouseleave', function() {
+            this.querySelector('i').classList.remove('icon-hover');
+        });
+    });
+    
+    // Inisialisasi tooltip jika Bootstrap tersedia
+    if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
+});
+
+// Function untuk menampilkan toast notification
+function showToast(message, type = 'info') {
+    // Periksa apakah toast container sudah ada
+    let toastContainer = document.querySelector('.toast-container');
+    
+    if (!toastContainer) {
+        // Buat container jika belum ada
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        document.body.appendChild(toastContainer);
+    }
+    
+    // Buat element toast
+    const toastEl = document.createElement('div');
+    toastEl.className = `toast show bg-${type} text-white`;
+    toastEl.setAttribute('role', 'alert');
+    toastEl.setAttribute('aria-live', 'assertive');
+    toastEl.setAttribute('aria-atomic', 'true');
+    
+    // Isi toast
+    toastEl.innerHTML = `
+        <div class="toast-header bg-${type} text-white">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong class="me-auto">Unesa Laptop</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            ${message}
+        </div>
+    `;
+    
+    // Tambahkan ke container
+    toastContainer.appendChild(toastEl);
+    
+    // Hapus toast setelah 3 detik
+    setTimeout(() => {
+        toastEl.classList.add('hiding');
+        setTimeout(() => {
+            toastEl.remove();
+        }, 300);
+    }, 3000);
+}
+
+// Tambahkan CSS dinamis untuk efek-efek tambahan
+document.addEventListener('DOMContentLoaded', function() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .zoom-effect {
+            animation: zoom-in 0.3s ease forwards;
+        }
+        
+        @keyframes zoom-in {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .select-hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.15);
+        }
+        
+        .rotate-icon {
+            animation: rotate 1s ease;
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .card-hover {
+            z-index: 5;
+        }
+        
+        .btn-adding {
+            background: linear-gradient(135deg, #10b981, #0ea5e9) !important;
+        }
+        
+        .icon-hover {
+            transform: scale(1.2);
+            color: var(--primary-color);
+        }
+        
+        .expanded-state {
+            color: var(--secondary-color);
+        }
+        
+        .toast {
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            opacity: 1;
+            transition: all 0.3s ease;
+        }
+        
+        .toast.hiding {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        
+        .is-invalid {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 0.25rem rgba(239, 68, 68, 0.15) !important;
+        }
+        
+        .is-valid {
+            border-color: #10b981 !important;
+            box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.15) !important;
+        }
+    `;
+    document.head.appendChild(style);
+});
     </script>
 </body>
 </html>

@@ -131,115 +131,428 @@ if (isset($_POST['checkout'])) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <style>
         :root {
-            --primary-color: #0d6efd;
-            --secondary-color: #6c757d;
-            --hover-color: #0a58ca;
-        }
+    --primary-color: #4361ee;
+    --primary-gradient: linear-gradient(135deg, #4361ee, #3a0ca3);
+    --secondary-color: #3a0ca3;
+    --accent-color: #4cc9f0;
+    --hover-color: #3b82f6;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --info-color: #3b82f6;
+    --light-color: #f8fafc;
+    --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+    --card-hover-shadow: 0 15px 30px rgba(67, 97, 238, 0.15);
+    --border-radius: 16px;
+    --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
 
-        body {
-            background-color: #f8f9fa;
-        }
+body {
+    background-color: #f8fafc;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    padding-bottom: 30px;
+    color: #334155;
+}
 
-        .navbar {
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            background: linear-gradient(45deg, #0d6efd, #0dcaf0) !important;
-        }
+/* Navbar Enhanced */
+.navbar {
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1);
+    background: var(--primary-gradient) !important;
+    padding: 15px 0;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
 
-        .navbar-brand {
-            font-weight: 600;
-        }
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.35rem;
+    letter-spacing: -0.5px;
+    position: relative;
+}
 
-        .card {
-            border-radius: 15px;
-            border: none;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            transition: all 0.3s ease;
-            margin-bottom: 20px;
-        }
+.navbar-brand::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 50%;
+    height: 3px;
+    background: white;
+    border-radius: 5px;
+    opacity: 0;
+    transform: translateY(5px);
+    transition: var(--transition);
+}
 
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
+.navbar-brand:hover::after {
+    opacity: 1;
+    transform: translateY(0);
+    width: 100%;
+}
 
-        .card-body {
-            padding: 1.5rem;
-        }
+/* Title Section */
+h2.mb-4.fw-bold {
+    color: #1e293b;
+    font-size: 1.75rem;
+    letter-spacing: -0.5px;
+    margin-bottom: 1.5rem !important;
+    padding-bottom: 0.75rem;
+    position: relative;
+}
 
-        .card-title {
-            color: #2c3e50;
-            font-weight: 600;
-            margin-bottom: 1.2rem;
-        }
+h2.mb-4.fw-bold::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 4px;
+    background: var(--primary-gradient);
+    border-radius: 2px;
+}
 
-        .table {
-            margin-bottom: 0;
-        }
+h2.mb-4.fw-bold i {
+    color: var(--primary-color);
+    margin-right: 0.5rem;
+}
 
-        .table > thead {
-            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
-        }
+/* Alert Styling */
+.alert {
+    border-radius: 16px;
+    border: none;
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+    animation: fadeIn 0.5s ease;
+    display: flex;
+    align-items: center;
+}
 
-        .table > thead th {
-            font-weight: 600;
-            color: #2c3e50;
-            border: none;
-            padding: 15px;
-        }
+.alert-danger {
+    background: linear-gradient(135deg, #fef2f2, #fee2e2);
+    color: #b91c1c;
+}
 
-        .table > tbody td {
-            padding: 15px;
-            vertical-align: middle;
-        }
+.alert i {
+    font-size: 1.2rem;
+    margin-right: 0.75rem;
+}
 
-        .form-select, 
-        .form-control {
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            padding: 12px;
-            transition: all 0.3s ease;
-        }
+.btn-close {
+    margin-left: auto;
+    opacity: 0.8;
+    transition: var(--transition);
+}
 
-        .form-select:focus,
-        .form-control:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(13,110,253,0.15);
-        }
+.btn-close:hover {
+    opacity: 1;
+    transform: rotate(90deg);
+}
 
-        .input-group-text {
-            border: 2px solid #e9ecef;
-            background: #f8f9fa;
-            border-radius: 10px 0 0 10px;
-        }
+/* Card Enhanced */
+.card {
+    border-radius: var(--border-radius);
+    border: none;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition);
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+    background: white;
+}
 
-        .btn-primary {
-            background: linear-gradient(45deg, #0d6efd, #0dcaf0);
-            border: none;
-            border-radius: 10px;
-            padding: 12px 25px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
+.card::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    z-index: -1;
+    background: var(--primary-gradient);
+    border-radius: calc(var(--border-radius) + 5px);
+    opacity: 0;
+    transition: var(--transition);
+    transform: scale(0.98);
+}
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(13,110,253,0.2);
-        }
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--card-hover-shadow);
+}
 
-        .alert {
-            border-radius: 12px;
-            border: none;
-            padding: 15px 20px;
-        }
+.card:hover::before {
+    opacity: 0.3;
+    transform: scale(1);
+}
 
-        tfoot {
-            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
-            font-weight: bold;
-        }
+.card-body {
+    padding: 1.75rem;
+}
 
-        tfoot td {
-            padding: 15px !important;
-        }
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.card-title i {
+    color: var(--primary-color);
+    margin-right: 0.5rem;
+    font-size: 1.2rem;
+    transition: var(--transition);
+}
+
+.card:hover .card-title i {
+    transform: scale(1.1);
+}
+
+/* User Details Box */
+.p-3.bg-light.rounded {
+    background: #f1f5f9 !important;
+    border-radius: 12px !important;
+    padding: 1.25rem !important;
+    transition: var(--transition);
+    border-left: 4px solid var(--primary-color);
+}
+
+.card:hover .p-3.bg-light.rounded {
+    background: #f8fafc !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.p-3.bg-light.rounded p {
+    margin-bottom: 0.75rem !important;
+    display: flex;
+    align-items: center;
+}
+
+.p-3.bg-light.rounded p:last-child {
+    margin-bottom: 0 !important;
+}
+
+.p-3.bg-light.rounded p strong {
+    min-width: 80px;
+    display: inline-block;
+    color: #475569;
+    font-weight: 600;
+}
+
+/* Table Styling */
+.table-responsive {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table > thead {
+    background: linear-gradient(45deg, #f1f5f9, #e2e8f0);
+}
+
+.table > thead th {
+    color: #475569;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    padding: 1.25rem 1rem;
+    border: none;
+}
+
+.table > tbody td {
+    padding: 1.25rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+tfoot {
+    background: linear-gradient(45deg, #f1f5f9, #e2e8f0);
+    font-weight: 600;
+}
+
+tfoot td {
+    padding: 1.25rem 1rem !important;
+    color: #1e293b;
+}
+
+/* Form Elements */
+.form-label {
+    color: #475569;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.form-select, 
+.form-control {
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    transition: var(--transition);
+    color: #1e293b;
+}
+
+.form-select:focus,
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.15);
+}
+
+.form-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%234361ee' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right 0.75rem center;
+    background-size: 12px;
+}
+
+.input-group-text {
+    border: 2px solid #e2e8f0;
+    background: #f1f5f9;
+    border-radius: 12px 0 0 12px;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.input-group .form-control {
+    border-left: 0;
+    border-radius: 0 12px 12px 0;
+}
+
+.form-control.is-invalid {
+    border-color: var(--danger-color) !important;
+    background-image: none;
+    padding-right: 0.75rem;
+}
+
+.form-control.is-invalid:focus {
+    box-shadow: 0 0 0 0.25rem rgba(239, 68, 68, 0.15);
+}
+
+/* Button Styles */
+.btn-primary {
+    background: var(--primary-gradient);
+    border: none;
+    border-radius: 12px;
+    padding: 0.9rem 1.5rem;
+    font-weight: 600;
+    transition: var(--transition);
+    color: white;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #3a0ca3, #4361ee);
+    transition: var(--transition);
+    z-index: -1;
+    opacity: 0;
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(67, 97, 238, 0.25);
+    color: white;
+}
+
+.btn-primary:hover::before {
+    opacity: 1;
+}
+
+.btn-primary i {
+    transition: var(--transition);
+}
+
+.btn-primary:hover i {
+    transform: scale(1.1);
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.row > * {
+    opacity: 0;
+    animation: fadeIn 0.5s ease forwards;
+}
+
+.col-md-8 {
+    animation-delay: 0.1s;
+}
+
+.col-md-4 {
+    animation-delay: 0.3s;
+}
+
+/* Checkout-specific Enhancements */
+.form-control.rupiah-input {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 767.98px) {
+    .card-body {
+        padding: 1.25rem;
+    }
+    
+    .table > thead th,
+    .table > tbody td,
+    tfoot td {
+        padding: 0.75rem;
+    }
+    
+    .btn-primary {
+        padding: 0.75rem 1.25rem;
+    }
+}
+
+/* Product Row Hover */
+.table > tbody tr {
+    transition: var(--transition);
+}
+
+.table > tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+.table > tbody tr:hover td {
+    color: #1e293b;
+}
+
+/* Price Styling */
+.table td:nth-child(2),
+.table td:nth-child(4) {
+    font-weight: 500;
+    color: var(--primary-color);
+}
+
+tfoot td:last-child {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--primary-color);
+}
     </style>
 </head>
 <body>
@@ -357,7 +670,15 @@ if (isset($_POST['checkout'])) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    // Format semua elemen rupiah pada load
     document.querySelectorAll('.rupiah-input').forEach(function(input) {
+        let value = input.value.replace(/[^0-9]/g, '');
+        if (value) {
+            input.value = formatRupiah(value);
+        }
+        
+        // Event listener untuk input
         input.addEventListener('keyup', function(e) {
             let value = this.value.replace(/[^0-9]/g, '');
             this.value = formatRupiah(value);
@@ -367,27 +688,263 @@ if (isset($_POST['checkout'])) {
             
             if (current < min) {
                 this.classList.add('is-invalid');
+                showValidationFeedback(this, `Minimal pembayaran: Rp ${formatRupiah(min.toString())}`);
             } else {
                 this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+                hideValidationFeedback(this);
+                
+                // Hapus class is-valid setelah beberapa detik
+                setTimeout(() => {
+                    this.classList.remove('is-valid');
+                }, 2000);
+            }
+            
+            // Kalkulasi dan tampilkan kembalian secara real-time
+            calculateChange(value);
+        });
+    });
+    
+    // Fungsi untuk kalkulasi kembalian secara real-time
+    function calculateChange(inputValue) {
+        const total = document.querySelector('input[name="total"]').value;
+        const bayar = parseInt(inputValue) || 0;
+        const kembalian = bayar - parseInt(total);
+        
+        // Jika div kembalian tidak ada, buat baru
+        let kembalianEl = document.getElementById('kembalian-preview');
+        
+        if (!kembalianEl) {
+            kembalianEl = document.createElement('div');
+            kembalianEl.id = 'kembalian-preview';
+            kembalianEl.className = 'mt-3 p-3 rounded';
+            
+            const form = document.querySelector('form.needs-validation');
+            form.insertBefore(kembalianEl, form.querySelector('button[type="submit"]'));
+        }
+        
+        // Update isi dan styling
+        if (kembalian >= 0) {
+            kembalianEl.className = 'mt-3 p-3 rounded bg-success-subtle';
+            kembalianEl.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Kembalian:</span>
+                    <span class="fw-bold fs-5">Rp ${formatRupiah(kembalian.toString())}</span>
+                </div>
+            `;
+        } else {
+            kembalianEl.className = 'mt-3 p-3 rounded bg-danger-subtle';
+            kembalianEl.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Kurang:</span>
+                    <span class="fw-bold fs-5">Rp ${formatRupiah(Math.abs(kembalian).toString())}</span>
+                </div>
+            `;
+        }
+    }
+    
+    // Tambahkan feedback visual untuk form validation
+    function showValidationFeedback(inputElement, message) {
+        let feedback = inputElement.parentNode.querySelector('.invalid-feedback');
+        
+        if (!feedback) {
+            feedback = document.createElement('div');
+            feedback.className = 'invalid-feedback';
+            inputElement.parentNode.appendChild(feedback);
+        }
+        
+        feedback.textContent = message;
+        feedback.style.display = 'block';
+    }
+    
+    function hideValidationFeedback(inputElement) {
+        const feedback = inputElement.parentNode.querySelector('.invalid-feedback');
+        if (feedback) {
+            feedback.style.display = 'none';
+        }
+    }
+    
+    // Improve select UI
+    document.querySelectorAll('.form-select').forEach(select => {
+        select.addEventListener('change', function() {
+            if (this.value) {
+                this.classList.add('selected');
+            } else {
+                this.classList.remove('selected');
             }
         });
     });
-
-    function formatRupiah(angka) {
-        var number_string = angka.toString(),
-            split = number_string.split(','),
-            sisa = split[0].length % 3,
-            rupiah = split[0].substr(0, sisa),
-            ribuan = split[0].substr(sisa).match(/\d{3}/gi);
-
-        if (ribuan) {
-            separator = sisa ? '.' : '';
-            rupiah += separator + ribuan.join('.');
-        }
-
-        rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
-        return rupiah;
+    
+    // Animasi alert dismiss
+    document.querySelectorAll('.alert .btn-close').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const alert = this.closest('.alert');
+            alert.classList.add('fade-out');
+            setTimeout(() => {
+                alert.remove();
+            }, 300);
+        });
+    });
+    
+    // Form validation
+    const form = document.querySelector('form.needs-validation');
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            if (!this.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+                
+                // Tambah efek shake untuk field yang invalid
+                this.querySelectorAll(':invalid').forEach(field => {
+                    field.classList.add('shake-effect');
+                    setTimeout(() => {
+                        field.classList.remove('shake-effect');
+                    }, 500);
+                });
+            } else {
+                // Tambahkan animasi pada button submit
+                const submitBtn = this.querySelector('button[type="submit"]');
+                submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Memproses...';
+                submitBtn.classList.add('processing');
+                
+                // Disable button
+                submitBtn.disabled = true;
+            }
+            
+            this.classList.add('was-validated');
+        });
     }
+    
+    // Enhance user details display
+    const userDetails = document.querySelector('.p-3.bg-light.rounded');
+    if (userDetails) {
+        const paragraphs = userDetails.querySelectorAll('p');
+        
+        paragraphs.forEach((p, index) => {
+            // Tambahkan icon yang sesuai
+            const strongText = p.querySelector('strong').textContent;
+            
+            let icon = '';
+            if (strongText.includes('Nama')) {
+                icon = '<i class="bi bi-person-circle me-2"></i>';
+            } else if (strongText.includes('Alamat')) {
+                icon = '<i class="bi bi-geo-alt me-2"></i>';
+            } else if (strongText.includes('Telepon')) {
+                icon = '<i class="bi bi-telephone me-2"></i>';
+            }
+            
+            // Tambahkan icon ke paragraf
+            p.querySelector('strong').innerHTML = icon + p.querySelector('strong').textContent;
+            
+            // Tambahkan animasi delay
+            p.style.opacity = 0;
+            p.style.animation = `fadeIn 0.5s ease forwards ${0.1 + (index * 0.1)}s`;
+        });
+    }
+    
+    // Efek hover pada table rows
+    document.querySelectorAll('.table > tbody tr').forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.classList.add('highlight-row');
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.classList.remove('highlight-row');
+        });
+    });
+});
+
+// Format rupiah function
+function formatRupiah(angka) {
+    var number_string = angka.toString(),
+        split = number_string.split(','),
+        sisa = split[0].length % 3,
+        rupiah = split[0].substr(0, sisa),
+        ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+    if (ribuan) {
+        separator = sisa ? '.' : '';
+        rupiah += separator + ribuan.join('.');
+    }
+
+    rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+    return rupiah;
+}
+
+// Tambahkan CSS dinamis
+(function() {
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-out {
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        }
+        
+        .form-select.selected {
+            border-color: var(--primary-color);
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .shake-effect {
+            animation: shake 0.4s ease;
+        }
+        
+        .btn-primary.processing {
+            background: linear-gradient(135deg, #10b981, #3b82f6) !important;
+        }
+        
+        .invalid-feedback {
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            color: var(--danger-color);
+            font-weight: 500;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        #kembalian-preview {
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .bg-success-subtle {
+            background-color: #d1fae5 !important;
+            color: #065f46;
+        }
+        
+        .bg-danger-subtle {
+            background-color: #fee2e2 !important;
+            color: #b91c1c;
+        }
+        
+        .highlight-row {
+            background-color: #f8fafc !important;
+            transition: background-color 0.3s ease;
+        }
+        
+        .form-control.is-valid {
+            border-color: #10b981 !important;
+            background-image: none;
+            padding-right: 0.75rem;
+        }
+        
+        .form-control.is-valid:focus {
+            box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.15);
+        }
+    `;
+    document.head.appendChild(style);
+})();
     </script>
 </body>
 </html>

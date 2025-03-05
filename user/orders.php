@@ -28,100 +28,501 @@ $orders = query($query);
    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
    <style>
        :root {
-           --primary-color: #0d6efd;
-           --secondary-color: #6c757d;
-           --hover-color: #0a58ca;
-       }
+    --primary-color: #4361ee;
+    --primary-gradient: linear-gradient(135deg, #4361ee, #3a0ca3);
+    --secondary-color: #3a0ca3;
+    --accent-color: #4cc9f0;
+    --hover-color: #3b82f6;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --info-color: #3b82f6;
+    --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+    --card-hover-shadow: 0 15px 30px rgba(67, 97, 238, 0.15);
+    --border-radius: 16px;
+    --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
 
-       body {
-           background-color: #f8f9fa;
-       }
+body {
+    background-color: #f8fafc;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    padding-bottom: 30px;
+    color: #334155;
+}
 
-       .navbar {
-           box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-           background: linear-gradient(45deg, #0d6efd, #0dcaf0) !important;
-       }
+/* Navbar Enhanced */
+.navbar {
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1);
+    background: var(--primary-gradient) !important;
+    padding: 15px 0;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
 
-       .navbar-brand {
-           font-weight: 600;
-       }
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.35rem;
+    letter-spacing: -0.5px;
+    position: relative;
+}
 
-       .order-card {
-           border-radius: 15px;
-           border: none;
-           box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-           transition: transform 0.3s ease;
-           overflow: hidden;
-       }
+.navbar-brand::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 50%;
+    height: 3px;
+    background: white;
+    border-radius: 5px;
+    opacity: 0;
+    transform: translateY(5px);
+    transition: var(--transition);
+}
 
-       .order-card:hover {
-           transform: translateY(-5px);
-           box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-       }
+.navbar-brand:hover::after {
+    opacity: 1;
+    transform: translateY(0);
+    width: 100%;
+}
 
-       .card-header {
-           background: linear-gradient(45deg, #f8f9fa, #e9ecef);
-           border-bottom: 1px solid rgba(0,0,0,0.05);
-       }
+.navbar-nav .nav-link {
+    font-weight: 500;
+    padding: 8px 16px;
+    margin: 0 3px;
+    border-radius: 8px;
+    transition: var(--transition);
+}
 
-       .btn-detail {
-           background: linear-gradient(45deg, #0d6efd, #0dcaf0);
-           border: none;
-           color: white;
-           padding: 8px 16px;
-           border-radius: 8px;
-           transition: all 0.3s ease;
-       }
+.navbar-nav .nav-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
 
-       .btn-detail:hover {
-           transform: translateY(-2px);
-           box-shadow: 0 5px 15px rgba(13,110,253,0.2);
-           color: white;
-       }
+.navbar-nav .nav-link.active {
+    background: rgba(255, 255, 255, 0.2);
+    font-weight: 600;
+}
 
-       .modal-content {
-           border-radius: 20px;
-           border: none;
-           overflow: hidden;
-       }
+/* Badge Enhancement */
+.badge {
+    font-weight: 600;
+    padding: 0.4em 0.75em;
+    border-radius: 6px;
+    position: relative;
+    top: -3px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
 
-       .modal-header {
-           background: linear-gradient(45deg, #0d6efd, #0dcaf0);
-           color: white;
-           border: none;
-       }
+.badge.bg-primary {
+    background: var(--primary-gradient) !important;
+}
 
-       .btn-close {
-           filter: brightness(0) invert(1);
-       }
+.badge.bg-danger {
+    background: var(--danger-color) !important;
+}
 
-       .table {
-           border-radius: 10px;
-           overflow: hidden;
-       }
+/* Dropdown Animation */
+.dropdown-menu {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    animation: slideDown 0.3s ease forwards;
+    transform-origin: top center;
+    padding: 10px;
+}
 
-       .table thead {
-           background: linear-gradient(45deg, #f8f9fa, #e9ecef);
-       }
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
 
-       .alert {
-           border-radius: 12px;
-           border: none;
-       }
+.dropdown-item {
+    border-radius: 8px;
+    padding: 8px 16px;
+    transition: var(--transition);
+}
 
-       .product-list-item {
-           padding: 10px;
-           margin-bottom: 8px;
-           background: #f8f9fa;
-           border-radius: 8px;
-       }
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+    transform: translateX(5px);
+}
 
-       .order-meta {
-           padding: 15px;
-           background: #f8f9fa;
-           border-radius: 10px;
-           margin-top: 15px;
-       }
+.dropdown-item i {
+    transition: var(--transition);
+}
+
+.dropdown-item:hover i {
+    transform: scale(1.2);
+}
+
+/* Title Section */
+h2.mb-4.fw-bold {
+    color: #1e293b;
+    font-size: 1.75rem;
+    letter-spacing: -0.5px;
+    margin-bottom: 1.5rem !important;
+    padding-bottom: 0.75rem;
+    position: relative;
+}
+
+h2.mb-4.fw-bold::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 4px;
+    background: var(--primary-gradient);
+    border-radius: 2px;
+}
+
+h2.mb-4.fw-bold i {
+    color: var(--primary-color);
+    margin-right: 0.5rem;
+}
+
+/* Alert Styling */
+.alert {
+    border-radius: 16px;
+    border: none;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+    animation: fadeIn 0.5s ease;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+    color: #065f46;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    color: #1e40af;
+    display: flex;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+}
+
+.alert-info a {
+    color: var(--primary-color);
+    font-weight: 600;
+    text-decoration: none;
+    transition: var(--transition);
+    padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+    background: rgba(59, 130, 246, 0.1);
+    margin-left: 0.75rem !important;
+}
+
+.alert-info a:hover {
+    background: rgba(59, 130, 246, 0.2);
+    transform: translateY(-2px);
+    color: var(--secondary-color);
+}
+
+.alert-info i {
+    font-size: 1.5rem;
+    margin-right: 1rem;
+}
+
+/* Order Card Enhancement */
+.order-card {
+    border-radius: var(--border-radius);
+    border: none;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition);
+    overflow: hidden;
+    height: 100%;
+    position: relative;
+    z-index: 1;
+}
+
+.order-card::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    z-index: -1;
+    background: var(--primary-gradient);
+    border-radius: calc(var(--border-radius) + 5px);
+    opacity: 0;
+    transition: var(--transition);
+    transform: scale(0.98);
+}
+
+.order-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--card-hover-shadow);
+}
+
+.order-card:hover::before {
+    opacity: 0.5;
+    transform: scale(1);
+}
+
+.card-header {
+    background: #f8fafc;
+    border-bottom: 2px solid #f1f5f9;
+    padding: 1.25rem 1.5rem;
+}
+
+.card-header h6 {
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.card-footer {
+    background: #f8fafc;
+    border-top: 2px solid #f1f5f9;
+    padding: 1.25rem 1.5rem;
+}
+
+/* Product List Item */
+.product-list-item {
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+    background: #f8fafc;
+    border-radius: 12px;
+    transition: var(--transition);
+    border-left: 3px solid transparent;
+}
+
+.product-list-item:hover {
+    background: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border-left: 3px solid var(--primary-color);
+    transform: translateX(5px);
+}
+
+.product-list-item .text-primary {
+    font-weight: 600;
+    color: var(--primary-color) !important;
+}
+
+/* Order Meta */
+.order-meta {
+    padding: 1.25rem;
+    background: #f8fafc;
+    border-radius: 12px;
+    margin-top: 1.25rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+    transition: var(--transition);
+}
+
+.order-meta:hover {
+    background: white;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.06);
+}
+
+.order-meta .fw-bold {
+    color: #475569;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.order-meta .text-primary {
+    color: var(--primary-color) !important;
+    font-size: 1.2rem;
+}
+
+/* Button Styles */
+.btn-detail {
+    background: var(--primary-gradient);
+    border: none;
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-weight: 600;
+    transition: var(--transition);
+    color: white;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.btn-detail::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #3a0ca3, #4361ee);
+    transition: var(--transition);
+    z-index: -1;
+    opacity: 0;
+}
+
+.btn-detail:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(67, 97, 238, 0.25);
+    color: white;
+}
+
+.btn-detail:hover::before {
+    opacity: 1;
+}
+
+.btn-detail i {
+    transition: var(--transition);
+}
+
+.btn-detail:hover i {
+    transform: translateX(-3px);
+}
+
+/* Modal Styling */
+.modal-content {
+    border-radius: 24px;
+    border: none;
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    padding: 1.25rem 1.5rem;
+}
+
+.modal-title {
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+}
+
+.modal-title i {
+    margin-right: 0.5rem;
+    font-size: 1.2rem;
+}
+
+.btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+    transition: var(--transition);
+}
+
+.btn-close:hover {
+    opacity: 1;
+    transform: rotate(90deg);
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+/* Table Styling */
+.table-responsive {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table thead th {
+    background: #f1f5f9;
+    color: #475569;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    padding: 1rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.table tbody td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.table tfoot {
+    background: #f8fafc;
+}
+
+.table tfoot td {
+    padding: 0.75rem 1rem;
+    border-top: 2px solid #e2e8f0 !important;
+}
+
+.table tfoot .fw-bold {
+    color: #1e293b;
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.row > * {
+    transition: var(--transition);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 767.98px) {
+    .card-header {
+        padding: 1rem;
+    }
+    
+    .card-body, .card-footer {
+        padding: 1.25rem 1rem;
+    }
+    
+    .product-list-item {
+        padding: 0.75rem 1rem;
+    }
+    
+    .order-meta {
+        padding: 1rem;
+    }
+    
+    .table thead th, .table tbody td, .table tfoot td {
+        padding: 0.75rem;
+    }
+}
+
+/* Animated Row for Orders */
+.col-md-6 {
+    opacity: 0;
+    animation: fadeIn 0.5s ease forwards;
+}
+
+.col-md-6:nth-child(odd) {
+    animation-delay: 0.1s;
+}
+
+.col-md-6:nth-child(even) {
+    animation-delay: 0.3s;
+}
+
+
    </style>
 </head>
 <body>
@@ -236,10 +637,13 @@ $orders = query($query);
                                </div>
                            </div>
                            <div class="card-footer border-0 bg-white text-end py-3">
-                               <button type="button" class="btn-detail" data-bs-toggle="modal" data-bs-target="#orderDetail<?= $order['id_pembelian']; ?>">
-                                   <i class="bi bi-eye me-2"></i>Detail Pesanan
-                               </button>
-                           </div>
+    <a href="print_order.php?id=<?= $order['id_pembelian']; ?>" class="btn-print me-2" target="_blank">
+        <i class="bi bi-printer me-2"></i>Cetak Struk
+    </a>
+    <button type="button" class="btn-detail" data-bs-toggle="modal" data-bs-target="#orderDetail<?= $order['id_pembelian']; ?>">
+        <i class="bi bi-eye me-2"></i>Detail Pesanan
+    </button>
+</div>
                        </div>
                    </div>
 
@@ -311,5 +715,204 @@ $orders = query($query);
    </div>
 
    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    // Hover effects untuk cards
+    document.querySelectorAll('.order-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.classList.add('card-hover');
+            
+            // Animasi pada badge
+            const badge = this.querySelector('.badge');
+            if (badge) {
+                badge.classList.add('badge-pulse');
+                setTimeout(() => {
+                    badge.classList.remove('badge-pulse');
+                }, 1000);
+            }
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.classList.remove('card-hover');
+        });
+    });
+    
+    // Hover effects untuk product-list-item
+    document.querySelectorAll('.product-list-item').forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            const parent = this.closest('.order-card');
+            if (parent) {
+                this.style.borderLeftColor = getComputedStyle(document.documentElement)
+                    .getPropertyValue('--primary-color').trim();
+            }
+        });
+        
+        item.addEventListener('mouseleave', function() {
+            this.style.borderLeftColor = 'transparent';
+        });
+    });
+    
+    // Hover effects untuk tombol detail
+    document.querySelectorAll('.btn-detail').forEach(btn => {
+        btn.addEventListener('mouseenter', function() {
+            const icon = this.querySelector('i');
+            if (icon) {
+                icon.classList.add('btn-icon-effect');
+            }
+        });
+        
+        btn.addEventListener('mouseleave', function() {
+            const icon = this.querySelector('i');
+            if (icon) {
+                icon.classList.remove('btn-icon-effect');
+            }
+        });
+    });
+    
+    // Animated number counting untuk totals
+    document.querySelectorAll('.text-primary.fw-bold').forEach(el => {
+        const text = el.textContent;
+        if (text.includes('Rp')) {
+            const value = parseInt(text.replace(/\D/g, ''));
+            if (!isNaN(value) && value > 1000) {
+                animateValue(el, 0, value, 1500);
+            }
+        }
+    });
+    
+    // Modal effects
+    const orderDetailModals = document.querySelectorAll('[id^="orderDetail"]');
+    orderDetailModals.forEach(modal => {
+        modal.addEventListener('show.bs.modal', function() {
+            // Tambahkan class untuk animasi masuk
+            setTimeout(() => {
+                const table = this.querySelector('.table-responsive');
+                if (table) table.classList.add('table-fade-in');
+            }, 200);
+        });
+        
+        modal.addEventListener('hidden.bs.modal', function() {
+            // Reset animasi ketika modal ditutup
+            const table = this.querySelector('.table-responsive');
+            if (table) table.classList.remove('table-fade-in');
+        });
+    });
+    
+    // Navbar active link
+    const currentLocation = window.location.pathname;
+    document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
+        if (link.getAttribute('href') && currentLocation.endsWith(link.getAttribute('href'))) {
+            link.classList.add('active');
+        } else {
+            link.classList.remove('active');
+        }
+    });
+    
+    // Dropdown hover effect
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            this.querySelector('i').classList.add('icon-hover');
+        });
+        
+        item.addEventListener('mouseleave', function() {
+            this.querySelector('i').classList.remove('icon-hover');
+        });
+    });
+    
+    // Alert dismiss animation
+    document.querySelectorAll('.alert .btn-close').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const alert = this.closest('.alert');
+            alert.classList.add('fade-out');
+            setTimeout(() => {
+                alert.remove();
+            }, 300);
+        });
+    });
+});
+
+// Utility function untuk animasi counting numbers
+function animateValue(element, start, end, duration) {
+    let startTimestamp = null;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        
+        // Format as Indonesian Rupiah
+        const value = Math.floor(progress * (end - start) + start);
+        element.textContent = 'Rp ' + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        
+        if (progress < 1) {
+            window.requestAnimationFrame(step);
+        }
+    };
+    window.requestAnimationFrame(step);
+}
+
+// Tambahkan CSS dinamis untuk animasi tambahan
+(function() {
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes badgePulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .badge-pulse {
+            animation: badgePulse 0.5s ease;
+        }
+        
+        .btn-icon-effect {
+            animation: slideLeft 0.5s ease infinite alternate;
+        }
+        
+        @keyframes slideLeft {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-3px); }
+        }
+        
+        .table-fade-in {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+        
+        @keyframes fadeInUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        
+        .card-hover {
+            z-index: 5;
+        }
+        
+        .icon-hover {
+            transform: scale(1.2);
+            color: var(--primary-color);
+        }
+        
+        .fade-out {
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        }
+        
+        /* Total value counters */
+        .text-primary.fw-bold {
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+    `;
+    document.head.appendChild(style);
+})();
+   </script>
 </body>
 </html>

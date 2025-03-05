@@ -117,8 +117,8 @@ $details = query($detail_query);
 
     <div class="store-info">
         <p style="margin: 5px 0;">
-            Jl. Contoh No. 123<br>
-            Telp: (021) 12345678<br>
+            Jl. Unesa Ketintang AX<br>
+            Telp: 085784777172<br>
             Email: unesa@mhs.unesa.ac.id
         </p>
     </div>

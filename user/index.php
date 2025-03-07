@@ -33,6 +33,14 @@ $categories = query("SELECT * FROM tb_kategori");
 $brands = query("SELECT * FROM tb_merk");
 $user_id = $_SESSION['user_id'];
 $user = query("SELECT * FROM tb_user WHERE user_id = $user_id")[0];
+
+// Ambil wishlist user untuk cek barang sudah ada di wishlist atau belum
+$wishlist_query = "SELECT barang_id FROM tb_wishlist WHERE user_id = $user_id";
+$wishlist_items = query($wishlist_query);
+$wishlist_array = [];
+foreach ($wishlist_items as $item) {
+    $wishlist_array[] = $item['barang_id'];
+}
 ?>
 
 <!DOCTYPE html>
@@ -43,7 +51,8 @@ $user = query("SELECT * FROM tb_user WHERE user_id = $user_id")[0];
     <title>Unesa Laptop</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
-<style>
+    <style>
+        /* CSS tetap sama seperti sebelumnya */
         :root {
     --primary-color: #4361ee;
     --primary-gradient: linear-gradient(135deg, #4361ee, #3a0ca3);
@@ -616,23 +625,99 @@ body {
     overflow: hidden;
     opacity: 1;
     transition: all 0.3s ease;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+}
+
+@keyframes toastIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.toast {
+    animation: toastIn 0.3s ease;
 }
 
 .toast.success {
-    border-left: 4px solid var(--success-color);
+    border-left: 4px solid #10b981;
 }
 
 .toast.danger {
-    border-left: 4px solid var(--danger-color);
+    border-left: 4px solid #ef4444;
 }
 
 .toast.hide {
     opacity: 0;
     transform: translateX(100%);
 }
+
+.toast i {
+    margin-right: 10px;
+    font-size: 1.2rem;
+}
+
+.toast.success i {
+    color: #10b981;
+}
+
+.toast.danger i {
+    color: #ef4444;
+}
+
+/* Tombol wishlist aktif */
+.add-to-wishlist.active {
+    background-color: rgba(67, 97, 238, 0.1);
+}
+
+.add-to-wishlist.active i {
+    color: #ef4444;
+}
+
+/* Spinner loading */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.2em;
+}
+
+/* Loading overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    visibility: hidden;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.loading-overlay.show {
+    visibility: visible;
+    opacity: 1;
+}
     </style>
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
         <div class="container">
@@ -684,6 +769,9 @@ body {
             </div>
         </div>
     </nav>
+
+    <!-- Toast Container untuk notifikasi -->
+    <div class="toast-container" id="toast-container"></div>
 
     <!-- Main Content -->
     <div class="container my-4">
@@ -795,8 +883,9 @@ body {
                                         </button>
                                     </form>
                                     <button type="button" class="btn btn-outline-primary add-to-wishlist" 
-                                            data-id="<?= $laptop['barang_id']; ?>">
-                                        <i class="bi bi-heart"></i>
+                                            data-id="<?= $laptop['barang_id']; ?>"
+                                            <?= in_array($laptop['barang_id'], $wishlist_array) ? 'data-in-wishlist="true"' : ''; ?>>
+                                        <i class="bi <?= in_array($laptop['barang_id'], $wishlist_array) ? 'bi-heart-fill' : 'bi-heart'; ?>"></i>
                                     </button>
                                 </div>
                             <?php else : ?>
@@ -830,187 +919,138 @@ body {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Function untuk menampilkan modal gambar dengan animasi
-function showImageModal(title, src) {
-    const modalLabel = document.getElementById('imageModalLabel');
-    const modalImg = document.getElementById('imageModalImg');
-    
-    modalLabel.textContent = title;
-    modalImg.src = src;
-    modalImg.alt = title;
-    
-    const modal = new bootstrap.Modal(document.getElementById('imageModal'));
-    modal.show();
-    
-    // Tambahkan animasi zoom-in pada gambar
-    setTimeout(() => {
-        modalImg.classList.add('zoom-effect');
-    }, 100);
-    
-    // Reset animasi saat modal ditutup
-    document.getElementById('imageModal').addEventListener('hidden.bs.modal', function () {
-        modalImg.classList.remove('zoom-effect');
-    });
-}
-
-// Event listener untuk toggle description dengan animasi
-document.addEventListener('DOMContentLoaded', function() {
-    // Kategori hover effect
-    const categorySelect = document.querySelector('select[name="kategori"]');
-    const brandSelect = document.querySelector('select[name="merk"]');
-    
-    if (categorySelect) {
-        categorySelect.addEventListener('mouseover', function() {
-            this.classList.add('select-hover');
-        });
-        categorySelect.addEventListener('mouseout', function() {
-            this.classList.remove('select-hover');
-        });
-    }
-    
-    if (brandSelect) {
-        brandSelect.addEventListener('mouseover', function() {
-            this.classList.add('select-hover');
-        });
-        brandSelect.addEventListener('mouseout', function() {
-            this.classList.remove('select-hover');
-        });
-    }
-    
-    // Animasi untuk tombol filter saat hover
-    const filterBtn = document.querySelector('button[type="submit"]');
-    if (filterBtn) {
-        filterBtn.addEventListener('mouseover', function() {
-            this.querySelector('i').classList.add('rotate-icon');
-        });
-        filterBtn.addEventListener('mouseout', function() {
-            this.querySelector('i').classList.remove('rotate-icon');
-        });
-    }
-    
-    // Animasi untuk toggle description
-    document.querySelectorAll('.toggle-description').forEach(button => {
-        button.addEventListener('click', function() {
-            const descId = this.getAttribute('data-id');
-            const descElement = document.getElementById('desc-' + descId);
-            const isExpanded = this.getAttribute('data-expanded') === 'true';
+        function showImageModal(title, src) {
+            const modalLabel = document.getElementById('imageModalLabel');
+            const modalImg = document.getElementById('imageModalImg');
             
-            if (!isExpanded) {
-                // Expand dengan animasi
-                descElement.classList.remove('collapsed');
-                descElement.classList.add('expanded');
-                this.textContent = 'Lihat lebih sedikit';
-                this.setAttribute('data-expanded', 'true');
-                this.classList.add('expanded-state');
-            } else {
-                // Collapse dengan animasi
-                descElement.classList.remove('expanded');
-                descElement.classList.add('collapsed');
-                this.textContent = 'Selengkapnya';
-                this.setAttribute('data-expanded', 'false');
-                this.classList.remove('expanded-state');
-            }
-        });
-    });
-
-    // Animasi hover untuk card product
-    document.querySelectorAll('.product-card').forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.classList.add('card-hover');
-        });
-        card.addEventListener('mouseleave', function() {
-            this.classList.remove('card-hover');
-        });
-    });
-
-    // Add to wishlist functionality
-    const wishlistButtons = document.querySelectorAll('.add-to-wishlist');
-    const toastContainer = document.createElement('div');
-    toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
-    toastContainer.style.zIndex = '9999';
-    document.body.appendChild(toastContainer);
-
-    wishlistButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const productId = this.getAttribute('data-id');
+            modalLabel.textContent = title;
+            modalImg.src = src;
+            modalImg.alt = title;
             
-            // Show loading state
-            const originalContent = this.innerHTML;
-            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
-            this.disabled = true;
+            const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+            modal.show();
             
-            fetch('wishlist_action.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `action=add&barang_id=${productId}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Restore button
-                this.innerHTML = originalContent;
-                this.disabled = false;
-                
-                if (data.status === 'success') {
-                    showToast(data.message, 'success');
-                    // Change icon to filled heart
-                    this.innerHTML = '<i class="bi bi-heart-fill"></i>';
-                    this.classList.add('active');
-                } else {
-                    showToast(data.message, 'danger');
+            // Tambahkan animasi zoom-in pada gambar
+            setTimeout(() => {
+                modalImg.classList.add('zoom-effect');
+            }, 100);
+            
+            // Reset animasi saat modal ditutup
+            document.getElementById('imageModal').addEventListener('hidden.bs.modal', function () {
+                modalImg.classList.remove('zoom-effect');
+            });
+        }
+
+        // Fungsi untuk menampilkan toast notification
+        function showToast(type, message) {
+            const toastContainer = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icon = type === 'success' ? 'bi-check-circle' : 'bi-exclamation-triangle';
+            
+            toast.innerHTML = `
+                <i class="bi ${icon}"></i>
+                <span>${message}</span>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Hapus toast setelah 3 detik
+            setTimeout(() => {
+                toast.classList.add('hide');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle deskripsi produk
+            document.querySelectorAll('.toggle-description').forEach(button => {
+                button.addEventListener('click', function() {
+                    const descId = this.getAttribute('data-id');
+                    const descElement = document.getElementById('desc-' + descId);
+                    const isExpanded = this.getAttribute('data-expanded') === 'true';
+                    
+                    if (!isExpanded) {
+                        // Expand dengan animasi
+                        descElement.classList.remove('collapsed');
+                        descElement.classList.add('expanded');
+                        this.textContent = 'Lihat lebih sedikit';
+                        this.setAttribute('data-expanded', 'true');
+                    } else {
+                        // Collapse dengan animasi
+                        descElement.classList.remove('expanded');
+                        descElement.classList.add('collapsed');
+                        this.textContent = 'Selengkapnya';
+                        this.setAttribute('data-expanded', 'false');
+                    }
+                });
+            });
+
+            // Tambahkan event listener untuk tombol wishlist
+            const wishlistButtons = document.querySelectorAll('.add-to-wishlist');
+            
+            wishlistButtons.forEach(button => {
+                // Cek jika barang sudah ada di wishlist
+                if (button.getAttribute('data-in-wishlist') === 'true') {
+                    button.classList.add('active');
                 }
-            })
-            .catch(error => {
-                // Restore button
-                this.innerHTML = originalContent;
-                this.disabled = false;
                 
-                showToast('Terjadi kesalahan. Silakan coba lagi.', 'danger');
-                console.error('Error:', error);
+                button.addEventListener('click', function() {
+                    const productId = this.getAttribute('data-id');
+                    const isInWishlist = this.classList.contains('active');
+                    const action = isInWishlist ? 'remove' : 'add';
+                    
+                    // Tampilkan loading
+                    const loadingOverlay = document.getElementById('loading-overlay');
+                    loadingOverlay.classList.add('show');
+                    
+                    // Simpan referensi ke button untuk digunakan di dalam fetch
+                    const buttonEl = this;
+                    
+                    // Kirim request AJAX
+                    fetch('wishlist_action.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `action=${action}&barang_id=${productId}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Sembunyikan loading overlay
+                        loadingOverlay.classList.remove('show');
+                        
+                        if (data.status === 'success') {
+                            // Tampilkan pesan sukses
+                            showToast('success', data.message);
+                            
+                            // Update tampilan tombol wishlist
+                            if (action === 'add') {
+                                buttonEl.classList.add('active');
+                                buttonEl.querySelector('i').classList.remove('bi-heart');
+                                buttonEl.querySelector('i').classList.add('bi-heart-fill');
+                            } else {
+                                buttonEl.classList.remove('active');
+                                buttonEl.querySelector('i').classList.remove('bi-heart-fill');
+                                buttonEl.querySelector('i').classList.add('bi-heart');
+                            }
+                        } else {
+                            // Tampilkan pesan error
+                            showToast('danger', data.message);
+                        }
+                    })
+                    .catch(error => {
+                        // Sembunyikan loading overlay
+                        loadingOverlay.classList.remove('show');
+                        
+                        // Tampilkan pesan error
+                        showToast('danger', 'Terjadi kesalahan. Silakan coba lagi.');
+                        console.error('Error:', error);
+                    });
+                });
             });
         });
-    });
-
-    function showToast(message, type) {
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        
-        let icon = 'info-circle';
-        if (type === 'success') icon = 'check-circle';
-        if (type === 'danger') icon = 'exclamation-circle';
-        
-        toast.innerHTML = `
-            <i class="bi bi-${icon} me-2"></i>
-            <div>${message}</div>
-        `;
-        
-        toastContainer.appendChild(toast);
-        
-        // Auto remove after 3 seconds
-        setTimeout(() => {
-            toast.classList.add('hide');
-            setTimeout(() => {
-                toast.remove();
-            }, 300);
-        }, 3000);
-    }
-    
-    // Add styles for toast animation
-    const toastStyle = document.createElement('style');
-    toastStyle.textContent = `
-        @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .rotate-icon {
-            animation: rotate 1s ease;
-        }
-        
-        .add-to-wishlist.active {
-            background-color: rgba(67, 97, 238, 0.1);
-            color: var(--primary-color);
-        }
-    `;
-    document.head.appendChild(toastStyle);
-});
+    </script>

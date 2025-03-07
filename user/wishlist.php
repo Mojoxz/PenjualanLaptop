@@ -243,6 +243,7 @@ h2.mb-4.fw-bold i {
     z-index: 1;
     background: white;
     margin-bottom: 1.5rem;
+    cursor: pointer;
 }
 
 .wishlist-item::before {
@@ -270,14 +271,24 @@ h2.mb-4.fw-bold i {
     transform: scale(1);
 }
 
-.wishlist-image {
+.wishlist-image-container {
     width: 120px;
     height: 120px;
-    object-fit: contain;
+    overflow: hidden;
     border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: var(--transition);
     background: #f8fafc;
     padding: 10px;
+}
+
+.wishlist-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transition: var(--transition);
 }
 
 .wishlist-item:hover .wishlist-image {
@@ -412,6 +423,30 @@ h2.mb-4.fw-bold i {
     transform: translateX(3px);
 }
 
+/* NEW: Lihat Detail Button */
+.btn-detail {
+    background: transparent;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    margin-right: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-detail:hover {
+    background-color: rgba(67, 97, 238, 0.1);
+    color: var(--primary-color);
+}
+
+.btn-detail i {
+    margin-right: 6px;
+}
+
+.btn-detail:hover i {
+    transform: translateX(3px);
+}
+
 /* Empty State */
 .empty-wishlist {
     text-align: center;
@@ -474,7 +509,7 @@ h2.mb-4.fw-bold i {
         padding: 1.5rem;
     }
     
-    .wishlist-image {
+    .wishlist-image-container {
         margin-bottom: 1rem;
         width: 100px;
         height: 100px;
@@ -682,12 +717,18 @@ h2.mb-4.fw-bold i {
            <div id="wishlist-items-container">
                <?php foreach ($wishlist_items as $item) : ?>
                    <div class="wishlist-item d-flex p-3 align-items-center" data-id="<?= $item['barang_id']; ?>">
-                       <img src="../assets/img/barang/<?= htmlspecialchars($item['gambar'] ?: 'no-image.jpg'); ?>" 
-                            alt="<?= htmlspecialchars($item['nama_barang']); ?>"
-                            class="wishlist-image">
+                       <!-- Clickable image that redirects to detail page -->
+                       <a href="detail_product.php?id=<?= $item['barang_id']; ?>" class="wishlist-image-container">
+                           <img src="../assets/img/barang/<?= htmlspecialchars($item['gambar'] ?: 'no-image.jpg'); ?>" 
+                                alt="<?= htmlspecialchars($item['nama_barang']); ?>"
+                                class="wishlist-image">
+                       </a>
                        
                        <div class="wishlist-details ms-4 flex-grow-1">
-                           <h5><?= htmlspecialchars($item['nama_barang']); ?></h5>
+                           <!-- Clickable product name that redirects to detail page -->
+                           <a href="detail_product.php?id=<?= $item['barang_id']; ?>" class="text-decoration-none">
+                               <h5><?= htmlspecialchars($item['nama_barang']); ?></h5>
+                           </a>
                            <p>
                                <i class="bi bi-tag me-1"></i><?= htmlspecialchars($item['nama_merk']); ?> | 
                                <i class="bi bi-laptop me-1"></i><?= htmlspecialchars($item['nama_kategori']); ?>
@@ -714,6 +755,11 @@ h2.mb-4.fw-bold i {
                        </div>
                        
                        <div class="wishlist-actions d-flex gap-2">
+                           <!-- New: Lihat Detail Button -->
+                           <a href="detail_product.php?id=<?= $item['barang_id']; ?>" class="btn btn-detail btn-sm">
+                               <i class="bi bi-eye"></i> Lihat Detail
+                           </a>
+                           
                            <?php if ($item['stok'] > 0) : ?>
                                <form action="cart.php" method="post">
                                    <input type="hidden" name="barang_id" value="<?= $item['barang_id']; ?>">
@@ -740,12 +786,18 @@ h2.mb-4.fw-bold i {
    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
    <script>
    document.addEventListener('DOMContentLoaded', function() {
+       // Click handler for wishlist item (image and title will redirect to detail page)
+       const wishlistItems = document.querySelectorAll('.wishlist-item');
+       
        // Get all remove wishlist buttons
        const removeButtons = document.querySelectorAll('.remove-wishlist');
        
        // Add event listeners to all remove buttons
        removeButtons.forEach(button => {
-           button.addEventListener('click', function() {
+           button.addEventListener('click', function(e) {
+               // Stop event propagation to prevent navigating to detail page
+               e.stopPropagation();
+               
                const barangId = this.getAttribute('data-id');
                const wishlistItem = this.closest('.wishlist-item');
                

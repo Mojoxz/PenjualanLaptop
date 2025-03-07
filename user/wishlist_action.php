@@ -2,7 +2,11 @@
 session_start();
 require_once '../config/koneksi.php';
 
-header('Content-Type: application/json'); // Set header content type ke JSON
+// Set header JSON
+header('Content-Type: application/json');
+
+// Log debugging
+error_log("wishlist_action.php dipanggil");
 
 // Cek login
 if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'user') {
@@ -15,11 +19,8 @@ if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'user') {
 
 $user_id = $_SESSION['user_id'];
 
-// Inisialisasi respons default
-$response = [
-    'status' => 'error',
-    'message' => 'Permintaan tidak valid atau tidak ada action yang ditentukan'
-];
+// Debug log
+error_log("User ID: $user_id");
 
 // Cek jika tabel wishlist sudah ada
 $checkTable = mysqli_query($conn, "SHOW TABLES LIKE 'tb_wishlist'");
@@ -40,15 +41,22 @@ if (mysqli_num_rows($checkTable) == 0) {
         ]);
         exit;
     }
+    
+    error_log("Tabel wishlist dibuat");
 }
 
-// Verifikasi request method
+// Inisialisasi respons default
+$response = [
+    'status' => 'error',
+    'message' => 'Permintaan tidak valid'
+];
+
+// Cek request method dan data
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Debug informasi
-    error_log("Menerima request POST ke wishlist_action.php");
+    // Log semua data POST
     error_log("POST data: " . print_r($_POST, true));
     
-    // Ambil action dan barang_id dari POST
+    // Ambil action dan barang_id
     $action = isset($_POST['action']) ? $_POST['action'] : '';
     $barang_id = isset($_POST['barang_id']) ? (int)$_POST['barang_id'] : 0;
     
@@ -75,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
     
-    // Proses sesuai action
+    // Proses berdasarkan action
     switch ($action) {
         case 'add':
             // Cek apakah sudah ada di wishlist
@@ -93,27 +101,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $tanggal = date('Y-m-d H:i:s');
                 $insert_query = "INSERT INTO tb_wishlist (user_id, barang_id, tanggal) VALUES ($user_id, $barang_id, '$tanggal')";
                 
-                if (mysqli_query($conn, $insert_query)) {
-                    $response = [
-                        'status' => 'success',
-                        'message' => 'Produk berhasil ditambahkan ke wishlist!'
-                    ];
-                } else {
-                    $error = mysqli_error($conn);
-                    error_log("Error saat menambahkan ke wishlist: $error");
-                    
-                    // Cek jika error karena duplikasi (kemungkinan karena UNIQUE key)
-                    if (strpos($error, 'Duplicate entry') !== false) {
+                try {
+                    if (mysqli_query($conn, $insert_query)) {
                         $response = [
                             'status' => 'success',
-                            'message' => 'Produk sudah ada di wishlist Anda!'
+                            'message' => 'Produk berhasil ditambahkan ke wishlist!'
                         ];
+                        error_log("Produk berhasil ditambahkan ke wishlist");
                     } else {
-                        $response = [
-                            'status' => 'error',
-                            'message' => 'Gagal menambahkan produk ke wishlist: ' . $error
-                        ];
+                        $error = mysqli_error($conn);
+                        error_log("Error saat menambahkan ke wishlist: $error");
+                        
+                        // Cek jika error karena duplikasi
+                        if (strpos($error, 'Duplicate entry') !== false) {
+                            $response = [
+                                'status' => 'success',
+                                'message' => 'Produk sudah ada di wishlist Anda!'
+                            ];
+                        } else {
+                            $response = [
+                                'status' => 'error',
+                                'message' => 'Gagal menambahkan produk ke wishlist'
+                            ];
+                        }
                     }
+                } catch (Exception $e) {
+                    error_log("Exception: " . $e->getMessage());
+                    $response = [
+                        'status' => 'error',
+                        'message' => 'Terjadi kesalahan saat memproses permintaan'
+                    ];
                 }
             }
             break;
@@ -131,13 +148,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } else {
                     $response = [
                         'status' => 'error',
-                        'message' => 'Produk tidak ditemukan di wishlist Anda.'
+                        'message' => 'Produk tidak ada di wishlist Anda.'
                     ];
                 }
             } else {
                 $response = [
                     'status' => 'error',
-                    'message' => 'Gagal menghapus produk dari wishlist: ' . mysqli_error($conn)
+                    'message' => 'Gagal menghapus produk dari wishlist'
                 ];
             }
             break;
@@ -156,15 +173,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         default:
             $response = [
                 'status' => 'error',
-                'message' => 'Action tidak valid! Action yang diterima: ' . $action
+                'message' => 'Action tidak valid!'
             ];
             break;
     }
+} else {
+    $response = [
+        'status' => 'error',
+        'message' => 'Method tidak valid! Harap gunakan POST.'
+    ];
 }
 
-// Log respons untuk debugging
-error_log("Mengirim respons: " . json_encode($response));
+// Log response untuk debugging
+error_log("Response: " . json_encode($response));
 
-// Mengembalikan response dalam format JSON
+// Mengembalikan respon dalam format JSON
 echo json_encode($response);
 exit;

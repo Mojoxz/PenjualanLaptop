@@ -551,6 +551,25 @@ body {
     cursor: not-allowed;
 }
 
+/* Wishlist Button */
+.btn-outline-primary {
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    background: white;
+    transition: var(--transition);
+}
+
+.btn-outline-primary:hover {
+    background-color: rgba(67, 97, 238, 0.1);
+    color: var(--primary-color);
+    transform: translateY(-3px);
+}
+
+.btn-outline-primary.active {
+    background-color: rgba(67, 97, 238, 0.1);
+    color: var(--primary-color);
+}
+
 /* Media Queries for Better Responsiveness */
 @media (max-width: 767.98px) {
     .product-image {
@@ -580,6 +599,37 @@ body {
         padding: 0.4em 0.6em;
     }
 }
+
+/* Toast Notification Styles */
+.toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.toast {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+    overflow: hidden;
+    opacity: 1;
+    transition: all 0.3s ease;
+}
+
+.toast.success {
+    border-left: 4px solid var(--success-color);
+}
+
+.toast.danger {
+    border-left: 4px solid var(--danger-color);
+}
+
+.toast.hide {
+    opacity: 0;
+    transform: translateX(100%);
+}
     </style>
 </head>
 <body>
@@ -598,7 +648,15 @@ body {
                         <a class="nav-link active" href="index.php">Home</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="search.php">Pencarian</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="orders.php">Pesanan Saya</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="wishlist.php">
+                            <i class="bi bi-heart me-1"></i>Wishlist
+                        </a>
                     </li>
                 </ul>
                 <ul class="navbar-nav">
@@ -629,6 +687,23 @@ body {
 
     <!-- Main Content -->
     <div class="container my-4">
+        <!-- Search Box -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <form action="search.php" method="get" class="d-flex">
+                            <input type="text" class="form-control me-2" name="keyword" 
+                                placeholder="Cari laptop berdasarkan nama atau spesifikasi...">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-search me-1"></i> Cari
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Filter Section -->
         <div class="row mb-4">
             <div class="col-md-12">
@@ -668,7 +743,7 @@ body {
             </div>
         </div>
 
-<!-- Products Grid -->
+        <!-- Products Grid -->
         <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
             <?php foreach ($laptops as $laptop) : ?>
             <div class="col">
@@ -710,19 +785,20 @@ body {
                                 Rp <?= number_format($laptop['harga_jual'], 0, ',', '.'); ?>
                             </h6>
                             <?php if ($laptop['stok'] > 0) : ?>
-                                <form action="cart.php" method="post" class="cart-form">
-                                    <input type="hidden" name="barang_id" value="<?= $laptop['barang_id']; ?>">
-                                    <input type="hidden" name="action" value="add">
-                                    <div class="input-group input-group-sm mb-2">
-                                        <span class="input-group-text">Jumlah</span>
-                                        <input type="number" name="qty" value="1" min="1" 
-                                               max="<?= $laptop['stok']; ?>" class="form-control"
-                                               required>
-                                    </div>
-                                    <button type="submit" class="btn btn-primary w-100">
-                                        <i class="bi bi-cart-plus me-2"></i>Tambah ke Keranjang
+                                <div class="d-flex gap-2">
+                                    <form action="cart.php" method="post" class="flex-grow-1">
+                                        <input type="hidden" name="barang_id" value="<?= $laptop['barang_id']; ?>">
+                                        <input type="hidden" name="action" value="add">
+                                        <input type="hidden" name="qty" value="1">
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="bi bi-cart-plus me-2"></i>Tambah ke Keranjang
+                                        </button>
+                                    </form>
+                                    <button type="button" class="btn btn-outline-primary add-to-wishlist" 
+                                            data-id="<?= $laptop['barang_id']; ?>">
+                                        <i class="bi bi-heart"></i>
                                     </button>
-                                </form>
+                                </div>
                             <?php else : ?>
                                 <button class="btn btn-secondary w-100" disabled>
                                     <i class="bi bi-x-circle me-2"></i>Stok Habis
@@ -736,7 +812,7 @@ body {
         </div>
     </div>
 
-<!-- Modal Image -->
+    <!-- Modal Image -->
     <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
@@ -846,199 +922,95 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Event listener untuk validasi form dengan UI feedback
-    document.querySelectorAll('.cart-form').forEach(form => {
-        const qtyInput = form.querySelector('input[name="qty"]');
-        
-        if (qtyInput) {
-            // Tambahkan pemberitahuan visual saat input berubah
-            qtyInput.addEventListener('input', function() {
-                const qty = parseInt(this.value);
-                const max = parseInt(this.getAttribute('max'));
-                
-                if (qty < 1) {
-                    this.classList.add('is-invalid');
-                } else if (qty > max) {
-                    this.classList.add('is-invalid');
-                } else {
-                    this.classList.remove('is-invalid');
-                    this.classList.add('is-valid');
-                    
-                    // Hapus class is-valid setelah beberapa detik
-                    setTimeout(() => {
-                        this.classList.remove('is-valid');
-                    }, 2000);
-                }
-            });
-        }
-        
-        form.addEventListener('submit', function(e) {
-            if (!qtyInput) return;
+    // Add to wishlist functionality
+    const wishlistButtons = document.querySelectorAll('.add-to-wishlist');
+    const toastContainer = document.createElement('div');
+    toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+    toastContainer.style.zIndex = '9999';
+    document.body.appendChild(toastContainer);
+
+    wishlistButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = this.getAttribute('data-id');
             
-            const qty = parseInt(qtyInput.value);
-            const max = parseInt(qtyInput.getAttribute('max'));
-
-            if (qty < 1) {
-                e.preventDefault();
-                showToast('Jumlah minimal pembelian adalah 1', 'warning');
-                qtyInput.value = 1;
-                qtyInput.focus();
-            } else if (qty > max) {
-                e.preventDefault();
-                showToast(`Jumlah maksimal pembelian adalah ${max}`, 'warning');
-                qtyInput.value = max;
-                qtyInput.focus();
-            } else {
-                // Tambahkan animasi untuk tombol
-                const submitBtn = this.querySelector('button[type="submit"]');
-                submitBtn.innerHTML = '<i class="bi bi-check2-circle me-2"></i>Menambahkan...';
-                submitBtn.classList.add('btn-adding');
+            // Show loading state
+            const originalContent = this.innerHTML;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+            this.disabled = true;
+            
+            fetch('wishlist_action.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `action=add&barang_id=${productId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Restore button
+                this.innerHTML = originalContent;
+                this.disabled = false;
                 
-                // Animasi opsional: ini akan mengembalikan label asli jika form tidak di-submit
-                setTimeout(() => {
-                    if (!this.classList.contains('submitted')) {
-                        submitBtn.innerHTML = '<i class="bi bi-cart-plus me-2"></i>Tambah ke Keranjang';
-                        submitBtn.classList.remove('btn-adding');
-                    }
-                }, 2000);
+                if (data.status === 'success') {
+                    showToast(data.message, 'success');
+                    // Change icon to filled heart
+                    this.innerHTML = '<i class="bi bi-heart-fill"></i>';
+                    this.classList.add('active');
+                } else {
+                    showToast(data.message, 'danger');
+                }
+            })
+            .catch(error => {
+                // Restore button
+                this.innerHTML = originalContent;
+                this.disabled = false;
                 
-                this.classList.add('submitted');
-            }
+                showToast('Terjadi kesalahan. Silakan coba lagi.', 'danger');
+                console.error('Error:', error);
+            });
         });
     });
-    
-    // Tambahkan efek hover pada menu dropdown
-    document.querySelectorAll('.dropdown-item').forEach(item => {
-        item.addEventListener('mouseenter', function() {
-            this.querySelector('i').classList.add('icon-hover');
-        });
+
+    function showToast(message, type) {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
         
-        item.addEventListener('mouseleave', function() {
-            this.querySelector('i').classList.remove('icon-hover');
-        });
-    });
-    
-    // Inisialisasi tooltip jika Bootstrap tersedia
-    if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-    }
-});
-
-// Function untuk menampilkan toast notification
-function showToast(message, type = 'info') {
-    // Periksa apakah toast container sudah ada
-    let toastContainer = document.querySelector('.toast-container');
-    
-    if (!toastContainer) {
-        // Buat container jika belum ada
-        toastContainer = document.createElement('div');
-        toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
-        document.body.appendChild(toastContainer);
-    }
-    
-    // Buat element toast
-    const toastEl = document.createElement('div');
-    toastEl.className = `toast show bg-${type} text-white`;
-    toastEl.setAttribute('role', 'alert');
-    toastEl.setAttribute('aria-live', 'assertive');
-    toastEl.setAttribute('aria-atomic', 'true');
-    
-    // Isi toast
-    toastEl.innerHTML = `
-        <div class="toast-header bg-${type} text-white">
-            <i class="bi bi-info-circle me-2"></i>
-            <strong class="me-auto">Unesa Laptop</strong>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-        <div class="toast-body">
-            ${message}
-        </div>
-    `;
-    
-    // Tambahkan ke container
-    toastContainer.appendChild(toastEl);
-    
-    // Hapus toast setelah 3 detik
-    setTimeout(() => {
-        toastEl.classList.add('hiding');
+        let icon = 'info-circle';
+        if (type === 'success') icon = 'check-circle';
+        if (type === 'danger') icon = 'exclamation-circle';
+        
+        toast.innerHTML = `
+            <i class="bi bi-${icon} me-2"></i>
+            <div>${message}</div>
+        `;
+        
+        toastContainer.appendChild(toast);
+        
+        // Auto remove after 3 seconds
         setTimeout(() => {
-            toastEl.remove();
-        }, 300);
-    }, 3000);
-}
-
-// Tambahkan CSS dinamis untuk efek-efek tambahan
-document.addEventListener('DOMContentLoaded', function() {
-    const style = document.createElement('style');
-    style.textContent = `
-        .zoom-effect {
-            animation: zoom-in 0.3s ease forwards;
-        }
-        
-        @keyframes zoom-in {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-        
-        .select-hover {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.15);
+            toast.classList.add('hide');
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }, 3000);
+    }
+    
+    // Add styles for toast animation
+    const toastStyle = document.createElement('style');
+    toastStyle.textContent = `
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
         .rotate-icon {
             animation: rotate 1s ease;
         }
         
-        @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .card-hover {
-            z-index: 5;
-        }
-        
-        .btn-adding {
-            background: linear-gradient(135deg, #10b981, #0ea5e9) !important;
-        }
-        
-        .icon-hover {
-            transform: scale(1.2);
+        .add-to-wishlist.active {
+            background-color: rgba(67, 97, 238, 0.1);
             color: var(--primary-color);
         }
-        
-        .expanded-state {
-            color: var(--secondary-color);
-        }
-        
-        .toast {
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-            opacity: 1;
-            transition: all 0.3s ease;
-        }
-        
-        .toast.hiding {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        
-        .is-invalid {
-            border-color: #ef4444 !important;
-            box-shadow: 0 0 0 0.25rem rgba(239, 68, 68, 0.15) !important;
-        }
-        
-        .is-valid {
-            border-color: #10b981 !important;
-            box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.15) !important;
-        }
     `;
-    document.head.appendChild(style);
+    document.head.appendChild(toastStyle);
 });
-    </script>
-</body>
-</html>
-

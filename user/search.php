@@ -248,6 +248,9 @@ $brands = query("SELECT * FROM tb_merk");
             z-index: 1;
             background: white;
             height: 100%;
+            border: none;
+            box-shadow: var(--card-shadow);
+            cursor: pointer;
         }
 
         .product-card::before {
@@ -275,11 +278,21 @@ $brands = query("SELECT * FROM tb_merk");
             transform: scale(1);
         }
 
-        .product-image {
+        .product-image-container {
             width: 100%;
             height: 200px;
-            object-fit: contain;
+            position: relative;
+            overflow: hidden;
             background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .product-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
             transition: var(--transition);
             transform-origin: center;
         }
@@ -368,9 +381,40 @@ $brands = query("SELECT * FROM tb_merk");
             opacity: 1;
         }
 
+        /* Lihat Detail Button */
+        .btn-detail {
+            margin-top: 0.5rem;
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            background: transparent;
+            border-radius: 12px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .btn-detail:hover {
+            background-color: rgba(67, 97, 238, 0.1);
+            transform: translateY(-3px);
+            color: var(--primary-color);
+        }
+
+        .btn-detail i {
+            margin-right: 6px;
+            transition: var(--transition);
+        }
+
+        .btn-detail:hover i {
+            transform: translateX(3px);
+        }
+
         /* Responsive Adjustments */
         @media (max-width: 767.98px) {
-            .product-image {
+            .product-image-container {
                 height: 180px;
             }
             
@@ -573,6 +617,9 @@ $brands = query("SELECT * FROM tb_merk");
         <div class="spinner"></div>
     </div>
 
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
     <!-- Main Content -->
     <div class="container my-4">
         <h2 class="mb-4 fw-bold">
@@ -686,8 +733,8 @@ $brands = query("SELECT * FROM tb_merk");
                 <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
                     <?php foreach ($products as $product) : ?>
                         <div class="col">
-                            <div class="card h-100 product-card">
-                                <div class="position-relative">
+                            <div class="card h-100 product-card" onclick="goToDetail(<?= $product['barang_id']; ?>)">
+                                <div class="position-relative product-image-container">
                                     <img src="../assets/img/barang/<?= htmlspecialchars($product['gambar'] ?: 'no-image.jpg'); ?>" 
                                         class="product-image" 
                                         alt="<?= htmlspecialchars($product['nama_barang']); ?>">
@@ -716,7 +763,7 @@ $brands = query("SELECT * FROM tb_merk");
                                         </h6>
                                         <div class="d-flex gap-2">
                                             <?php if ($product['stok'] > 0) : ?>
-                                                <form action="cart.php" method="post" class="w-100">
+                                                <form action="cart.php" method="post" class="w-100" onclick="event.stopPropagation();">
                                                     <input type="hidden" name="barang_id" value="<?= $product['barang_id']; ?>">
                                                     <input type="hidden" name="action" value="add">
                                                     <input type="hidden" name="qty" value="1">
@@ -725,15 +772,20 @@ $brands = query("SELECT * FROM tb_merk");
                                                     </button>
                                                 </form>
                                                 <button type="button" class="btn btn-outline-primary add-to-wishlist" 
-                                                        data-id="<?= $product['barang_id']; ?>">
+                                                        data-id="<?= $product['barang_id']; ?>" onclick="event.stopPropagation();">
                                                     <i class="bi bi-heart"></i>
                                                 </button>
                                             <?php else : ?>
-                                                <button class="btn btn-secondary w-100" disabled>
+                                                <button class="btn btn-secondary w-100" disabled onclick="event.stopPropagation();">
                                                     <i class="bi bi-x-circle me-2"></i>Stok Habis
                                                 </button>
                                             <?php endif; ?>
                                         </div>
+                                        
+                                        <!-- Added "Lihat Detail" Button -->
+                                        <a href="detail_product.php?id=<?= $product['barang_id']; ?>" class="btn-detail mt-2" onclick="event.stopPropagation();">
+                                            <i class="bi bi-eye"></i> Lihat Detail
+                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -787,7 +839,10 @@ $brands = query("SELECT * FROM tb_merk");
         const wishlistButtons = document.querySelectorAll('.add-to-wishlist');
         
         wishlistButtons.forEach(button => {
-            button.addEventListener('click', function() {
+            button.addEventListener('click', function(e) {
+                // Prevent card click event propagation
+                e.stopPropagation();
+                
                 const productId = this.getAttribute('data-id');
                 addToWishlist(productId, button);
             });
@@ -887,6 +942,11 @@ $brands = query("SELECT * FROM tb_merk");
                 });
             }
         }
+        
+        // Function to go to product detail page
+        window.goToDetail = function(productId) {
+            window.location.href = `detail_product.php?id=${productId}`;
+        };
         
         // Run on page load
         checkWishlistStatus();

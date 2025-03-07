@@ -11,33 +11,79 @@ if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'user') {
 $user_id = $_SESSION['user_id'];
 $user = query("SELECT * FROM tb_user WHERE user_id = $user_id")[0];
 
+// Create upload directory if it doesn't exist
+$upload_dir = "../uploads/profile_photos/";
+if (!file_exists($upload_dir)) {
+    mkdir($upload_dir, 0777, true);
+}
+
 // Proses update profile
 if (isset($_POST['update'])) {
     $nama = $_POST['nama'];
     $alamat = $_POST['alamat'];
     $telepon = $_POST['telepon'];
     
+    // Initialize data array
+    $data = [
+        'nama' => $nama,
+        'alamat' => $alamat,
+        'telepon' => $telepon
+    ];
+    
     // Jika ada password baru
     if (!empty($_POST['password'])) {
         $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
-        $data = [
-            'nama' => $nama,
-            'password' => $password,
-            'alamat' => $alamat,
-            'telepon' => $telepon
-        ];
-    } else {
-        $data = [
-            'nama' => $nama,
-            'alamat' => $alamat,
-            'telepon' => $telepon
-        ];
+        $data['password'] = $password;
     }
     
+    // Handle profile photo upload
+    if ($_FILES['profile_photo']['size'] > 0) {
+        $file = $_FILES['profile_photo'];
+        $filename = $file['name'];
+        $tmp_name = $file['tmp_name'];
+        $file_error = $file['error'];
+        $file_size = $file['size'];
+        
+        // Get file extension
+        $file_ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        
+        // Allowed extensions
+        $allowed_exts = array('jpg', 'jpeg', 'png', 'gif');
+        
+        // Check if file is valid
+        if (in_array($file_ext, $allowed_exts) && $file_error === 0 && $file_size <= 2097152) { // 2MB max
+            // Create a unique filename
+            $new_filename = "user_" . $user_id . "_" . time() . "." . $file_ext;
+            $destination = $upload_dir . $new_filename;
+            
+            // Delete old photo if exists
+            if (!empty($user['photo']) && file_exists("../" . $user['photo'])) {
+                unlink("../" . $user['photo']);
+            }
+            
+            // Move uploaded file
+            if (move_uploaded_file($tmp_name, $destination)) {
+                $data['photo'] = "uploads/profile_photos/" . $new_filename;
+            } else {
+                $_SESSION['error'] = 'Gagal upload foto profile!';
+            }
+        } else {
+            // Invalid file
+            if ($file_size > 2097152) {
+                $_SESSION['error'] = 'Ukuran file tidak boleh lebih dari 2MB!';
+            } else {
+                $_SESSION['error'] = 'Format file tidak valid (JPG, JPEG, PNG, GIF)!';
+            }
+        }
+    }
+    
+    // Update user data
     if (ubah('tb_user', $data, "user_id = $user_id")) {
         $_SESSION['success'] = 'Profile berhasil diupdate!';
         header("Location: profile.php");
         exit;
+    } else {
+        $_SESSION['error'] = 'Gagal mengubah profile!';
     }
 }
 ?>
@@ -240,6 +286,11 @@ body {
 .alert-success {
     background: linear-gradient(135deg, #ecfdf5, #d1fae5);
     color: #065f46;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #991b1b;
 }
 
 .alert i {
@@ -555,6 +606,193 @@ tr:hover .order-id {
 .table tbody tr:nth-child(4) { animation-delay: 0.4s; }
 .table tbody tr:nth-child(5) { animation-delay: 0.5s; }
 
+/* Toggle Password Button */
+#togglePassword {
+    background-color: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #64748b;
+    transition: var(--transition);
+}
+
+#togglePassword:hover {
+    background-color: #e2e8f0;
+    color: var(--primary-color);
+}
+
+/* Password Field Effects */
+#password:focus + #togglePassword {
+    border-color: var(--primary-color);
+}
+
+/* Profile Photo Styles */
+.profile-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.profile-photo-container {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    margin-bottom: 1.5rem;
+}
+
+.profile-photo {
+    width: 180px;
+    height: 180px;
+    border-radius: var(--border-radius);
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition);
+    background-color: #f1f5f9;
+}
+
+.profile-photo:hover {
+    box-shadow: var(--card-hover-shadow);
+}
+
+.photo-overlay {
+    position: absolute;
+    bottom: -10px;
+    right: -10px;
+    background: var(--primary-gradient);
+    width: 45px;
+    height: 45px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    border: 2px solid #fff;
+    transition: var(--transition);
+}
+
+.photo-overlay:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(67, 97, 238, 0.25);
+}
+
+.photo-overlay i {
+    color: white;
+    font-size: 1.4rem;
+}
+
+.profile-info {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.profile-name {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.profile-username {
+    font-size: 1rem;
+    color: #64748b;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-username i {
+    color: var(--primary-color);
+    margin-right: 0.5rem;
+}
+
+.profile-actions {
+    margin-top: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-sm {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+    border-radius: 8px;
+}
+
+.photo-overlay i {
+    color: white;
+    font-size: 1.2rem;
+}
+
+#profile_photo {
+    display: none;
+}
+
+.preview-container {
+    display: none;
+    border-radius: var(--border-radius);
+    background-color: rgba(67, 97, 238, 0.05);
+    overflow: hidden;
+}
+
+.photo-preview {
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border: 2px solid #fff;
+}
+
+.alert-info {
+    background-color: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    color: #1e40af;
+    border-radius: 10px;
+}
+
+.alert-info .alert-heading {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+#removePreview {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+    transition: var(--transition);
+}
+
+#removePreview:hover {
+    background-color: var(--danger-color);
+    color: white;
+    border-color: var(--danger-color);
+}
+
+/* Photo animations */
+@keyframes preview-fade-in {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.preview-fade-in {
+    animation: preview-fade-in 0.3s ease forwards;
+}
+
+/* Profile photo pulse effect */
+@keyframes photo-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(67, 97, 238, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(67, 97, 238, 0); }
+}
+
+.photo-overlay:hover {
+    animation: photo-pulse 1.5s infinite;
+}
+
 /* Responsive Adjustments */
 @media (max-width: 767.98px) {
     .card-body {
@@ -587,24 +825,20 @@ tr:hover .order-id {
     .d-flex.justify-content-between .btn {
         width: 100%;
     }
-}
-
-/* Toggle Password Button */
-#togglePassword {
-    background-color: #f1f5f9;
-    border-color: #e2e8f0;
-    color: #64748b;
-    transition: var(--transition);
-}
-
-#togglePassword:hover {
-    background-color: #e2e8f0;
-    color: var(--primary-color);
-}
-
-/* Password Field Effects */
-#password:focus + #togglePassword {
-    border-color: var(--primary-color);
+    
+    .profile-photo-container {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .profile-photo {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .profile-name {
+        font-size: 1.5rem;
+    }
 }
     </style>
 </head>
@@ -670,8 +904,69 @@ tr:hover .order-id {
                             </div>
                             <?php unset($_SESSION['success']); ?>
                         <?php endif; ?>
+                        
+                        <?php if (isset($_SESSION['error'])) : ?>
+                            <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                                <i class="bi bi-exclamation-triangle me-2"></i><?= $_SESSION['error']; ?>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                            <?php unset($_SESSION['error']); ?>
+                        <?php endif; ?>
 
-                        <form action="" method="post" id="profileForm">
+                        <form action="" method="post" id="profileForm" enctype="multipart/form-data">
+                            <!-- Profile Section -->
+                            <div class="profile-section">
+                                <div class="profile-photo-container">
+                                    <img src="<?= !empty($user['photo']) ? '../' . $user['photo'] : '../assets/img/default-profile.png'; ?>" 
+                                         alt="Profile Photo" class="profile-photo" id="currentPhoto">
+                                    <label for="profile_photo" class="photo-overlay" title="Change profile photo">
+                                        <i class="bi bi-camera"></i>
+                                    </label>
+                                    <input type="file" name="profile_photo" id="profile_photo" accept="image/*">
+                                </div>
+                                <div class="profile-info">
+                                    <div class="profile-name"><?= htmlspecialchars($user['nama']); ?></div>
+                                    <div class="profile-username">
+                                        <i class="bi bi-person-badge"></i>Customer Account
+                                    </div>
+                                    <div class="profile-actions">
+                                        <span class="badge bg-light text-dark">
+                                            <i class="bi bi-telephone me-1"></i><?= htmlspecialchars($user['telepon']); ?>
+                                        </span>
+                                        <?php if (isset($user['created_at'])): ?>
+                                        <span class="badge bg-light text-dark">
+                                            <i class="bi bi-clock-history me-1"></i>Joined: <?= date('M Y', strtotime($user['created_at'])); ?>
+                                        </span>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Photo Preview -->
+                            <div class="preview-container mb-4" id="previewContainer">
+                                <div class="alert alert-info d-flex align-items-center">
+                                    <div class="flex-shrink-0 me-3 text-center">
+                                        <img src="" alt="Preview" class="photo-preview" id="photoPreview" style="width: 80px; height: 80px; border-radius: 8px; object-fit: cover;">
+                                        <small class="d-block mt-1">Preview</small>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="alert-heading mb-1">Foto Profil Baru</h6>
+                                        <div class="d-flex align-items-center">
+                                            <div>
+                                                <small id="fileName">filename.jpg</small>
+                                                <small class="text-muted" id="fileSize">(2MB)</small>
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-outline-danger ms-auto" id="removePreview">
+                                                <i class="bi bi-x-circle me-1"></i>Batal
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <small class="text-muted d-block mb-3 text-center">
+                                    *Maksimal 2MB (JPG, JPEG, PNG, GIF)
+                                </small>
+                            </div>
+
                             <div class="mb-3">
                                 <label for="nama" class="form-label">
                                     <i class="bi bi-person me-2"></i>Nama Lengkap
@@ -865,6 +1160,7 @@ tr:hover .order-id {
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Toggle password visibility
@@ -883,6 +1179,226 @@ document.addEventListener('DOMContentLoaded', function() {
             // Change button style
             this.classList.toggle('active');
         });
+    }
+    
+    // Profile photo preview with enhanced UX
+    const profilePhotoInput = document.getElementById('profile_photo');
+    const currentPhoto = document.getElementById('currentPhoto');
+    const previewContainer = document.getElementById('previewContainer');
+    const photoPreview = document.getElementById('photoPreview');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const removePreview = document.getElementById('removePreview');
+    const profileName = document.querySelector('.profile-name');
+    
+    if (profilePhotoInput) {
+        profilePhotoInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                
+                // Check file size and type
+                const fileExt = file.name.split('.').pop().toLowerCase();
+                const allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
+                
+                if (!allowedTypes.includes(fileExt)) {
+                    const toast = createToast('error', 'Format file tidak valid. Gunakan JPG, JPEG, PNG, atau GIF.');
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.remove(), 3000);
+                    this.value = '';
+                    return;
+                }
+                
+                if (file.size > 2 * 1024 * 1024) { // 2MB
+                    const toast = createToast('error', 'Ukuran file terlalu besar. Maksimal 2MB.');
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.remove(), 3000);
+                    this.value = '';
+                    return;
+                }
+                
+                // Display preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    photoPreview.src = e.target.result;
+                    currentPhoto.src = e.target.result;
+                    
+                    // Update profile info with file details
+                    fileName.textContent = file.name.length > 20 ? 
+                                           file.name.substring(0, 17) + '...' : file.name;
+                    
+                    // Format file size
+                    let size = '';
+                    if (file.size < 1024) {
+                        size = file.size + ' bytes';
+                    } else if (file.size < 1024 * 1024) {
+                        size = (file.size / 1024).toFixed(1) + ' KB';
+                    } else {
+                        size = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+                    }
+                    
+                    fileSize.textContent = `(${size})`;
+                    previewContainer.style.display = 'block';
+                    
+                    // Add animation
+                    previewContainer.classList.add('fade-in');
+                    
+                    // Scroll to preview if needed
+                    if (!isElementInViewport(previewContainer)) {
+                        previewContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Remove preview with confirmation
+        if (removePreview) {
+            removePreview.addEventListener('click', function() {
+                const btn = this;
+                
+                // Change button to confirm
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i class="bi bi-check-circle me-1"></i>Konfirmasi';
+                btn.classList.add('btn-danger');
+                
+                // Add confirmation timer
+                let timer = 3;
+                const timerInterval = setInterval(() => {
+                    timer--;
+                    if (timer <= 0) {
+                        clearInterval(timerInterval);
+                        btn.innerHTML = originalHTML;
+                        btn.classList.remove('btn-danger');
+                    }
+                }, 1000);
+                
+                // Cancel on second click
+                btn.onclick = function() {
+                    clearInterval(timerInterval);
+                    btn.innerHTML = originalHTML;
+                    btn.classList.remove('btn-danger');
+                    
+                    // Reset the file input
+                    profilePhotoInput.value = '';
+                    previewContainer.style.display = 'none';
+                    currentPhoto.src = currentPhoto.getAttribute('data-original') || 
+                                      '../assets/img/default-profile.png';
+                    
+                    // Reset onclick handler
+                    setTimeout(() => {
+                        btn.onclick = function() {
+                            removePreview.click();
+                        };
+                    }, 100);
+                    
+                    // Show toast notification
+                    const toast = createToast('info', 'Perubahan foto dibatalkan');
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.remove(), 3000);
+                };
+            });
+        }
+        
+        // Store original photo on load
+        if (currentPhoto) {
+            currentPhoto.setAttribute('data-original', currentPhoto.src);
+        }
+    }
+    
+    // Helper function to create toast notifications
+    function createToast(type, message) {
+        const toast = document.createElement('div');
+        toast.className = `toast-notification toast-${type}`;
+        
+        let icon;
+        switch(type) {
+            case 'error':
+                icon = 'exclamation-triangle';
+                break;
+            case 'success':
+                icon = 'check-circle';
+                break;
+            case 'info':
+            default:
+                icon = 'info-circle';
+        }
+        
+        toast.innerHTML = `
+            <div class="toast-icon">
+                <i class="bi bi-${icon}-fill"></i>
+            </div>
+            <div class="toast-content">${message}</div>
+        `;
+        
+        // Add animation class
+        toast.classList.add('toast-slide-in');
+        
+        // Add style for toast notifications if not already present
+        if (!document.getElementById('toast-styles')) {
+            const style = document.createElement('style');
+            style.id = 'toast-styles';
+            style.textContent = `
+                .toast-notification {
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 20px;
+                    display: flex;
+                    align-items: center;
+                    background: white;
+                    border-radius: 10px;
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+                    z-index: 1050;
+                    min-width: 280px;
+                    max-width: 400px;
+                }
+                
+                .toast-icon {
+                    margin-right: 15px;
+                    font-size: 1.2rem;
+                }
+                
+                .toast-success .toast-icon {
+                    color: var(--success-color);
+                }
+                
+                .toast-error .toast-icon {
+                    color: var(--danger-color);
+                }
+                
+                .toast-info .toast-icon {
+                    color: var(--primary-color);
+                }
+                
+                .toast-content {
+                    flex-grow: 1;
+                    font-size: 0.9rem;
+                }
+                
+                @keyframes toastSlideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                
+                .toast-slide-in {
+                    animation: toastSlideIn 0.3s forwards;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        return toast;
+    }
+    
+    // Helper function to check if element is in viewport
+    function isElementInViewport(el) {
+        const rect = el.getBoundingClientRect();
+        return (
+            rect.top >= 0 &&
+            rect.left >= 0 &&
+            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+        );
     }
     
     // Form validation and enhanced form behavior
@@ -908,6 +1424,15 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Enhanced form submission
         profileForm.addEventListener('submit', function(e) {
+            // Password validation
+            const passwordField = document.getElementById('password');
+            if (passwordField && passwordField.value.trim() !== '' && passwordField.value.length < 6) {
+                e.preventDefault();
+                alert('Password harus minimal 6 karakter');
+                passwordField.focus();
+                return false;
+            }
+            
             // Start loading state
             const submitBtn = this.querySelector('button[type="submit"]');
             const originalBtnText = submitBtn.innerHTML;
@@ -915,18 +1440,7 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.innerHTML = '<i class="bi bi-arrow-repeat me-2 spin"></i>Memperbarui...';
             submitBtn.classList.add('processing');
             
-            // Let the form submit normally
-            // This is just for visual feedback
-            setTimeout(() => {
-                // If for some reason the form doesn't actually submit after 3 seconds,
-                // we reset the button to allow resubmission
-                if (!this.classList.contains('submitted')) {
-                    submitBtn.innerHTML = originalBtnText;
-                    submitBtn.classList.remove('processing');
-                }
-            }, 3000);
-            
-            this.classList.add('submitted');
+            // Form will submit normally
         });
         
         // Password validation
@@ -991,17 +1505,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Add hover effects to table rows
-    document.querySelectorAll('.table tbody tr').forEach(row => {
-        row.addEventListener('mouseenter', function() {
-            this.classList.add('row-hover');
-        });
-        
-        row.addEventListener('mouseleave', function() {
-            this.classList.remove('row-hover');
-        });
-    });
-    
     // Fancy animation for statistics
     function animate(element) {
         if (element && !element.dataset.animated) {
@@ -1045,78 +1548,6 @@ document.addEventListener('DOMContentLoaded', function() {
         window.requestAnimationFrame(step);
     }
 });
-
-// Add dynamic CSS for enhanced interactions
-(function() {
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .fade-out {
-            opacity: 0;
-            transform: translateY(-20px);
-            transition: all 0.3s ease;
-        }
-        
-        .icon-active {
-            transform: scale(1.2);
-            color: var(--primary-color) !important;
-        }
-        
-        .processing {
-            background: linear-gradient(135deg, #10b981, #3b82f6) !important;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .spin {
-            animation: spin 1s linear infinite;
-            display: inline-block;
-        }
-        
-        .invalid-feedback {
-            display: none;
-            width: 100%;
-            margin-top: 0.25rem;
-            font-size: 0.85rem;
-            color: var(--danger-color);
-        }
-        
-        .is-invalid ~ .invalid-feedback {
-            display: block;
-        }
-        
-        .is-invalid {
-            border-color: var(--danger-color) !important;
-        }
-        
-        .is-valid {
-            border-color: var(--success-color) !important;
-        }
-        
-        .card-hover {
-            z-index: 10;
-        }
-        
-        .row-hover {
-            background-color: rgba(67, 97, 238, 0.05) !important;
-        }
-        
-        .card-hover h4 {
-            color: var(--primary-color);
-        }
-        
-        #togglePassword.active {
-            background-color: rgba(67, 97, 238, 0.1);
-            color: var(--primary-color);
-        }
-    `;
-    document.head.appendChild(style);
-})();
-</script>
+    </script>
+</body>
+</html>

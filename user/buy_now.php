@@ -8,9 +8,9 @@ if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'user') {
     exit;
 }
 
-// Cek keranjang
-if (empty($_SESSION['cart'])) {
-    header("Location: cart.php");
+// Cek sesi buy_now
+if (!isset($_SESSION['buy_now']) || empty($_SESSION['buy_now'])) {
+    header("Location: index.php");
     exit;
 }
 
@@ -21,15 +21,15 @@ $user = query("SELECT * FROM tb_user WHERE user_id = $user_id")[0];
 // Ambil data metode pembayaran
 $payments = query("SELECT * FROM tb_pembayaran");
 
-// Hitung total dan ambil detail barang di keranjang
+// Hitung total dan ambil detail barang di "buy now"
 $total = 0;
-$cart_items = [];
-foreach ($_SESSION['cart'] as $barang_id => $qty) {
+$buy_now_items = [];
+foreach ($_SESSION['buy_now'] as $barang_id => $qty) {
     $barang = query("SELECT * FROM tb_barang WHERE barang_id = $barang_id")[0];
     $subtotal = $barang['harga_jual'] * $qty;
     $total += $subtotal;
     
-    $cart_items[] = [
+    $buy_now_items[] = [
         'barang' => $barang,
         'qty' => $qty,
         'subtotal' => $subtotal
@@ -73,7 +73,7 @@ if (isset($_POST['checkout'])) {
                     $penjualan_id = mysqli_insert_id($conn);
                     $all_success = true;
 
-                    foreach ($cart_items as $item) {
+                    foreach ($buy_now_items as $item) {
                         $barang = $item['barang'];
                         $qty = $item['qty'];
                         $subtotal = $item['subtotal'];
@@ -109,15 +109,14 @@ if (isset($_POST['checkout'])) {
 
                     if ($all_success) {
                         mysqli_commit($conn);
-                        // Logging untuk debugging
-                        error_log("Pembelian berhasil disimpan dengan ID: $id_pembelian");
                         
-                        // Bersihkan keranjang
-                        unset($_SESSION['cart']);
+                        // Bersihkan data buy_now
+                        unset($_SESSION['buy_now']);
+                        
                         // Set pesan sukses dengan informasi kembalian
                         $_SESSION['success'] = "Pembelian berhasil! Order ID: #$id_pembelian. Kembalian Anda: Rp " . number_format($kembalian, 0, ',', '.');
                         
-                        // Redirect ke halaman orders
+                        // Redirect langsung ke halaman orders
                         header("Location: orders.php");
                         exit;
                     } else {
@@ -136,8 +135,6 @@ if (isset($_POST['checkout'])) {
         } catch (Exception $e) {
             mysqli_rollback($conn);
             $error = "Error: " . $e->getMessage();
-            // Logging untuk debugging
-            error_log("Error saat checkout: " . $e->getMessage());
         }
     }
 }
@@ -148,11 +145,10 @@ if (isset($_POST['checkout'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout - Unesa Laptop</title>
+    <title>Checkout "Beli Sekarang" - Unesa Laptop</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <style>
-        /* Existing CSS styles */
         :root {
     --primary-color: #4361ee;
     --primary-gradient: linear-gradient(135deg, #4361ee, #3a0ca3);
@@ -576,6 +572,76 @@ tfoot td:last-child {
     font-size: 1.1rem;
     color: var(--primary-color);
 }
+
+/* Buy Now Header */
+.buy-now-header {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.buy-now-header i {
+    margin-right: 0.5rem;
+}
+
+/* Buy Now Animation */
+@keyframes pulse-btn {
+    0% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+}
+
+.btn-buy-now {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border: none;
+    color: white;
+    animation: pulse-btn 2s infinite;
+}
+
+.btn-buy-now:hover {
+    background: linear-gradient(135deg, #059669, #10b981);
+    box-shadow: 0 8px 15px rgba(16, 185, 129, 0.25);
+    color: white;
+}
+
+/* Pembelian Langsung Callout */
+.buy-now-callout {
+    background: #ecfdf5;
+    border-left: 4px solid #10b981;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.buy-now-callout h6 {
+    color: #065f46;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.buy-now-callout h6 i {
+    margin-right: 0.5rem;
+}
+
+.buy-now-callout p {
+    color: #047857;
+    margin-bottom: 0;
+    font-size: 0.95rem;
+}
     </style>
 </head>
 <body>
@@ -589,7 +655,7 @@ tfoot td:last-child {
 
     <div class="container my-4">
         <h2 class="mb-4 fw-bold">
-            <i class="bi bi-credit-card me-2"></i>Checkout
+            <i class="bi bi-lightning-fill me-2"></i>Beli Sekarang
         </h2>
 
         <?php if (isset($error)): ?>
@@ -598,6 +664,12 @@ tfoot td:last-child {
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
         <?php endif; ?>
+
+        <!-- Callout Buy Now -->
+        <div class="buy-now-callout">
+            <h6><i class="bi bi-info-circle-fill"></i> Pembelian Langsung</h6>
+            <p>Anda sedang melakukan pembelian langsung produk. Silahkan selesaikan pembayaran untuk menyelesaikan transaksi.</p>
+        </div>
 
         <div class="row">
             <div class="col-md-8">
@@ -619,6 +691,9 @@ tfoot td:last-child {
                         <h5 class="card-title">
                             <i class="bi bi-cart-check me-2"></i>Detail Pesanan
                         </h5>
+                        <div class="buy-now-header mb-3">
+                            <i class="bi bi-lightning-fill"></i> Pembelian Langsung
+                        </div>
                         <div class="table-responsive">
                             <table class="table">
                                 <thead>
@@ -630,7 +705,7 @@ tfoot td:last-child {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($cart_items as $item): ?>
+                                    <?php foreach ($buy_now_items as $item): ?>
                                     <tr>
                                         <td><?= $item['barang']['nama_barang']; ?></td>
                                         <td>Rp <?= number_format($item['barang']['harga_jual'], 0, ',', '.'); ?></td>
@@ -687,7 +762,7 @@ tfoot td:last-child {
                                 </div>
                             </div>
 
-                            <!-- Kembalian akan ditampilkan di sini secara dinamis -->
+                            <!-- Kembalian preview container -->
                             <div id="kembalian-preview" class="mt-3 p-3 rounded bg-danger-subtle" style="display: none;">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <span>Kurang:</span>
@@ -695,7 +770,7 @@ tfoot td:last-child {
                                 </div>
                             </div>
 
-                            <button type="submit" name="checkout" class="btn btn-primary w-100 mt-3">
+                            <button type="submit" name="checkout" class="btn btn-buy-now w-100 mt-3">
                                 <i class="bi bi-check-circle me-2"></i>Proses Pembayaran
                             </button>
                         </form>
@@ -707,25 +782,25 @@ tfoot td:last-child {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-    // Inisialisasi kembalian preview saat halaman dimuat
     document.addEventListener('DOMContentLoaded', function() {
-        // Format semua elemen rupiah pada load
-        document.querySelectorAll('.rupiah-input').forEach(function(input) {
-            let value = input.value.replace(/[^0-9]/g, '');
-            if (value) {
-                input.value = formatRupiah(value);
-                // Kalkulasi kembalian jika ada nilai awal
-                calculateChange(value);
-            } else {
-                // Tampilkan kembalian default
-                const kembalianEl = document.getElementById('kembalian-preview');
-                if (kembalianEl) {
-                    kembalianEl.style.display = 'block';
-                }
+    // Inisialisasi kembalian preview saat halaman dimuat
+    const rupiahInputs = document.querySelectorAll('.rupiah-input');
+    rupiahInputs.forEach(function(input) {
+        let value = input.value.replace(/[^0-9]/g, '');
+        if (value) {
+            input.value = formatRupiah(value);
+            // Kalkulasi kembalian jika ada nilai awal
+            calculateChange(value);
+        } else {
+            // Tampilkan kembalian default
+            const kembalianEl = document.getElementById('kembalian-preview');
+            if (kembalianEl) {
+                kembalianEl.style.display = 'block';
             }
+        }
         
         // Event listener untuk input
-                    input.addEventListener('keyup', function(e) {
+        input.addEventListener('keyup', function(e) {
             let value = this.value.replace(/[^0-9]/g, '');
             this.value = formatRupiah(value);
             
@@ -778,6 +853,7 @@ tfoot td:last-child {
                     <span class="fw-bold fs-5">Rp ${formatRupiah(kembalian.toString())}</span>
                 </div>
             `;
+            kembalianEl.style.display = 'block';
         } else {
             kembalianEl.className = 'mt-3 p-3 rounded bg-danger-subtle';
             kembalianEl.innerHTML = `
@@ -786,126 +862,6 @@ tfoot td:last-child {
                     <span class="fw-bold fs-5">Rp ${formatRupiah(Math.abs(kembalian).toString())}</span>
                 </div>
             `;
+            kembalianEl.style.display = 'block';
         }
     }
-    
-    // Tambahkan feedback visual untuk form validation
-    function showValidationFeedback(inputElement, message) {
-        let feedback = inputElement.parentNode.querySelector('.invalid-feedback');
-        
-        if (!feedback) {
-            feedback = document.createElement('div');
-            feedback.className = 'invalid-feedback';
-            inputElement.parentNode.appendChild(feedback);
-        }
-        
-        feedback.textContent = message;
-        feedback.style.display = 'block';
-    }
-    
-    function hideValidationFeedback(inputElement) {
-        const feedback = inputElement.parentNode.querySelector('.invalid-feedback');
-        if (feedback) {
-            feedback.style.display = 'none';
-        }
-    }
-    
-    // Improve select UI
-    document.querySelectorAll('.form-select').forEach(select => {
-        select.addEventListener('change', function() {
-            if (this.value) {
-                this.classList.add('selected');
-            } else {
-                this.classList.remove('selected');
-            }
-        });
-    });
-    
-    // Animasi alert dismiss
-    document.querySelectorAll('.alert .btn-close').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const alert = this.closest('.alert');
-            alert.classList.add('fade-out');
-            setTimeout(() => {
-                alert.remove();
-            }, 300);
-        });
-    });
-    
-    // Form validation
-    const form = document.querySelector('form.needs-validation');
-    if (form) {
-        form.addEventListener('submit', function(event) {
-            if (!this.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
-                
-                // Tambah efek shake untuk field yang invalid
-                this.querySelectorAll(':invalid').forEach(field => {
-                    field.classList.add('shake-effect');
-                    setTimeout(() => {
-                        field.classList.remove('shake-effect');
-                    }, 500);
-                });
-            } else {
-                // Tambahkan animasi pada button submit
-                const submitBtn = this.querySelector('button[type="submit"]');
-                submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Memproses...';
-                submitBtn.classList.add('processing');
-                
-                // Disable button
-                submitBtn.disabled = true;
-                
-                // Tambahkan loading overlay dan highlight success
-                highlightSuccess();
-                
-                // Tambahkan hidden field untuk memastikan form tetap disubmit
-                const hiddenField = document.createElement('input');
-                hiddenField.type = 'hidden';
-                hiddenField.name = 'ensure_submit';
-                hiddenField.value = '1';
-                this.appendChild(hiddenField);
-            }
-            
-            this.classList.add('was-validated');
-        });
-    }
-    
-    // Enhance user details display
-    const userDetails = document.querySelector('.p-3.bg-light.rounded');
-    if (userDetails) {
-        const paragraphs = userDetails.querySelectorAll('p');
-        
-        paragraphs.forEach((p, index) => {
-            // Tambahkan icon yang sesuai
-            const strongText = p.querySelector('strong').textContent;
-            
-            let icon = '';
-            if (strongText.includes('Nama')) {
-                icon = '<i class="bi bi-person-circle me-2"></i>';
-            } else if (strongText.includes('Alamat')) {
-                icon = '<i class="bi bi-geo-alt me-2"></i>';
-            } else if (strongText.includes('Telepon')) {
-                icon = '<i class="bi bi-telephone me-2"></i>';
-            }
-            
-            // Tambahkan icon ke paragraf
-            p.querySelector('strong').innerHTML = icon + p.querySelector('strong').textContent;
-            
-            // Tambahkan animasi delay
-            p.style.opacity = 0;
-            p.style.animation = `fadeIn 0.5s ease forwards ${0.1 + (index * 0.1)}s`;
-        });
-    }
-    
-    // Efek hover pada table rows
-    document.querySelectorAll('.table > tbody tr').forEach(row => {
-        row.addEventListener('mouseenter', function() {
-            this.classList.add('highlight-row');
-        });
-        
-        row.addEventListener('mouseleave', function() {
-            this.classList.remove('highlight-row');
-        });
-    });
-});

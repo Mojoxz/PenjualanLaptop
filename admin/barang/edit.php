@@ -103,6 +103,242 @@ if (isset($_POST['edit'])) {
 include_once '../includes/header.php';
 ?>
 
+<style>
+    :root {
+        --primary-color: #2563eb;
+        --primary-hover: #1d4ed8;
+        --primary-light: #dbeafe;
+        --secondary-color: #475569;
+        --success-color: #10b981;
+        --danger-color: #ef4444;
+        --warning-color: #f59e0b;
+        --border-radius: 0.75rem;
+        --box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+        --transition: all 0.3s ease;
+    }
+    
+    .container-fluid {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    h1 {
+        color: #1e293b;
+        font-weight: 700;
+        font-size: 1.875rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .breadcrumb {
+        margin-bottom: 2rem;
+    }
+    
+    .breadcrumb-item a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+        transition: var(--transition);
+    }
+    
+    .breadcrumb-item a:hover {
+        color: var(--primary-hover);
+        text-decoration: underline;
+    }
+    
+    .breadcrumb-item.active {
+        color: var(--secondary-color);
+        font-weight: 400;
+    }
+    
+    .card {
+        border: none;
+        box-shadow: var(--box-shadow);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        transition: var(--transition);
+        height: 100%;
+        background-color: white;
+    }
+    
+    .card:hover {
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    
+    .card-header {
+        background: linear-gradient(45deg, #3b82f6, #2563eb);
+        color: white;
+        border-bottom: none;
+        padding: 1.25rem 1.5rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
+    }
+    
+    .card-header i {
+        font-size: 1.25rem;
+        vertical-align: middle;
+        margin-right: 0.5rem;
+    }
+    
+    .card-body {
+        padding: 2rem;
+        background-color: white;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e2e8f0;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        color: #1e293b;
+        background-color: #f8fafc;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.15);
+        background-color: white;
+    }
+    
+    .input-group-text {
+        border-radius: 0.5rem 0 0 0.5rem;
+        background-color: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-right: none;
+        color: #475569;
+        font-weight: 500;
+    }
+    
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-primary {
+        background: var(--primary-color);
+        border: none;
+        color: white;
+    }
+    
+    .btn-primary:hover, .btn-primary:focus {
+        background: var(--primary-hover);
+        box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3), 0 2px 4px -2px rgba(37, 99, 235, 0.3);
+        transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+        background: white;
+        border: 1px solid #e2e8f0;
+        color: var(--secondary-color);
+    }
+    
+    .btn-secondary:hover, .btn-secondary:focus {
+        background: #f8fafc;
+        color: #1e293b;
+        border-color: #cbd5e1;
+        transform: translateY(-2px);
+    }
+    
+    .alert {
+        border: none;
+        border-radius: var(--border-radius);
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .alert-danger {
+        background-color: #fee2e2;
+        color: #b91c1c;
+    }
+    
+    .img-thumbnail {
+        border-radius: 0.5rem;
+        border: 2px solid #e2e8f0;
+        padding: 0.25rem;
+        transition: var(--transition);
+        max-height: 200px;
+        object-fit: contain;
+    }
+    
+    .img-thumbnail:hover {
+        border-color: var(--primary-color);
+        transform: scale(1.02);
+    }
+    
+    .form-text {
+        color: #64748b;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+    
+    textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+    
+    .invalid-feedback {
+        font-size: 0.875rem;
+        color: var(--danger-color);
+        margin-top: 0.375rem;
+    }
+    
+    /* Animation */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .card {
+        animation: fadeIn 0.5s ease-out;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .container-fluid {
+            padding: 1rem;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .row > div {
+            margin-bottom: 1rem;
+        }
+        
+        h1 {
+            font-size: 1.5rem;
+        }
+        
+        .d-flex.justify-content-between {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .btn {
+            width: 100%;
+        }
+    }
+</style>
+
 <div class="container-fluid px-4">
     <h1 class="mt-4">Edit Laptop</h1>
     <ol class="breadcrumb mb-4">
@@ -121,7 +357,10 @@ include_once '../includes/header.php';
                 <div class="card-body">
                     <?php if (isset($error)) : ?>
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <?= $error ?>
+                            <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                            <div>
+                                <strong>Gagal!</strong> <?= $error ?>
+                            </div>
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     <?php endif; ?>
@@ -218,20 +457,24 @@ include_once '../includes/header.php';
                                     </div>
                                 </div>
 
-                                <div class="mb-3">
+                                <div class="mb-4">
                                     <label for="gambar" class="form-label">Gambar Produk</label>
                                     <input type="file" class="form-control" id="gambar" name="gambar" 
                                            accept="image/*" onchange="previewImage(this)">
                                     <div class="form-text">Upload gambar baru untuk mengganti yang lama. Format: JPG, JPEG, PNG, GIF. Maksimal 2MB</div>
                                     
                                     <!-- Preview gambar -->
-                                    <div class="mt-2">
+                                    <div class="mt-3 text-center">
                                         <?php if ($barang['gambar'] && file_exists("../../assets/img/barang/" . $barang['gambar'])) : ?>
-                                            <img id="preview" src="../../assets/img/barang/<?= $barang['gambar']; ?>" 
-                                                 alt="Preview" class="img-thumbnail" style="max-height: 200px;">
+                                            <div class="card p-2 bg-light border">
+                                                <img id="preview" src="../../assets/img/barang/<?= $barang['gambar']; ?>" 
+                                                    alt="Preview" class="img-thumbnail" style="max-height: 200px;">
+                                                <div class="mt-2 text-muted small">Gambar saat ini</div>
+                                            </div>
                                         <?php else : ?>
                                             <img id="preview" src="../../assets/img/no-image.jpg" 
                                                  alt="Preview" class="img-thumbnail" style="max-height: 200px;">
+                                            <div class="mt-2 text-muted small">Tidak ada gambar</div>
                                         <?php endif; ?>
                                     </div>
                                 </div>
@@ -239,7 +482,9 @@ include_once '../includes/header.php';
                         </div>
 
                         <div class="d-flex justify-content-between mt-4">
-                            <a href="index.php" class="btn btn-secondary">Kembali</a>
+                            <a href="index.php" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Kembali
+                            </a>
                             <button type="submit" name="edit" class="btn btn-primary">
                                 <i class="bi bi-save"></i> Update
                             </button>
@@ -286,6 +531,14 @@ function formatRupiah(angka) {
     rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
     return rupiah;
 }
+
+// Auto-hide alerts after 5 seconds
+setTimeout(function() {
+    document.querySelectorAll('.alert').forEach(function(alert) {
+        var bsAlert = new bootstrap.Alert(alert);
+        bsAlert.close();
+    });
+}, 5000);
 </script>
 
 <?php include_once '../includes/footer.php'; ?>

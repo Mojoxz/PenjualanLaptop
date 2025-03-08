@@ -48,167 +48,474 @@ $total_customer = query($query_customer)[0]['total'];
 include_once '../includes/header.php';
 ?>
 
+<!-- Custom CSS -->
 <style>
-    /* Modern Dashboard Styles */
+    :root {
+        --primary-color: #2563eb;
+        --primary-hover: #1d4ed8;
+        --secondary-color: #475569;
+        --success-color: #10b981;
+        --danger-color: #ef4444;
+        --warning-color: #f59e0b;
+        --border-radius: 0.75rem;
+        --box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+        --transition: all 0.3s ease;
+    }
+
+    body {
+        font-family: 'Inter', 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        background-color: #f8fafc;
+    }
+
     .page-header {
-        background: linear-gradient(135deg, #3498db, #2980b9);
+        background: linear-gradient(135deg, var(--primary-color), #3b82f6);
         color: white;
         padding: 2rem;
-        border-radius: 12px;
+        border-radius: var(--border-radius);
         margin-bottom: 2rem;
-        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        box-shadow: var(--box-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        bottom: -50%;
+        left: -50%;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+        transform: rotate(45deg);
+        z-index: 0;
+    }
+
+    .page-header * {
+        position: relative;
+        z-index: 1;
     }
 
     .breadcrumb-item a {
-        color: rgba(255,255,255,0.8);
+        color: rgba(255,255,255,0.9);
         text-decoration: none;
+        font-weight: 500;
+        transition: var(--transition);
+    }
+
+    .breadcrumb-item a:hover {
+        color: white;
+        text-decoration: underline;
     }
 
     .breadcrumb-item.active {
         color: white;
+        font-weight: 400;
     }
 
     .card {
         border: none;
-        border-radius: 12px;
-        box-shadow: 0 2px 15px rgba(0,0,0,0.05);
-        transition: transform 0.3s ease;
-    }
-
-    .card:hover {
-        transform: translateY(-5px);
-    }
-
-    .filter-card {
-        background: white;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-    }
-
-    .summary-card {
-        padding: 1.5rem;
-    }
-
-    .summary-card .bi {
-        opacity: 0.8;
-    }
-
-    .table-card {
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        transition: var(--transition);
         overflow: hidden;
     }
 
-    .table-card .card-header {
+    .card:hover {
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+
+    .card-header {
         background: white;
-        border-bottom: 2px solid #f8f9fa;
-        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 1.25rem 1.5rem;
+        font-weight: 600;
+        color: var(--dark-color);
     }
 
     .table {
         margin-bottom: 0;
+        border-collapse: separate;
+        border-spacing: 0;
     }
 
     .table th {
-        background: #2c3e50;
+        background: #1e293b;
         color: white;
         font-weight: 500;
         text-transform: uppercase;
         font-size: 0.85rem;
         letter-spacing: 0.5px;
+        padding: 1rem 0.75rem;
+        vertical-align: middle;
+        border: none;
+    }
+
+    .table th:first-child {
+        border-top-left-radius: 0.5rem;
+    }
+
+    .table th:last-child {
+        border-top-right-radius: 0.5rem;
     }
 
     .table td {
         vertical-align: middle;
-        padding: 1rem;
+        padding: 1rem 0.75rem;
+        border-top: none;
+        border-bottom: 1px solid #e2e8f0;
+        transition: var(--transition);
+    }
+
+    .table tr:hover td {
+        background-color: #f8fafc;
+    }
+
+    .table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .table tr:last-child td:first-child {
+        border-bottom-left-radius: 0.5rem;
+    }
+
+    .table tr:last-child td:last-child {
+        border-bottom-right-radius: 0.5rem;
+    }
+
+    .badge {
+        padding: 0.5em 1em;
+        font-weight: 500;
+        border-radius: 2rem;
+        letter-spacing: 0.5px;
+        transition: var(--transition);
+    }
+
+    .badge:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
     }
 
     .btn {
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        transition: all 0.3s;
+        padding: 0.6rem 1.2rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.875rem;
     }
 
     .btn-primary {
-        background: #3498db;
+        background: var(--primary-color);
+        border: none;
+        color: white;
+    }
+
+    .btn-primary:hover, .btn-primary:focus {
+        background: var(--primary-hover);
+        box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.5), 0 2px 4px -2px rgba(37, 99, 235, 0.5);
+        transform: translateY(-2px);
+    }
+
+    .btn-warning {
+        background: var(--warning-color);
+        border: none;
+        color: white;
+    }
+
+    .btn-warning:hover, .btn-warning:focus {
+        background: #ea580c;
+        color: white;
+        box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.5), 0 2px 4px -2px rgba(245, 158, 11, 0.5);
+        transform: translateY(-2px);
+    }
+
+    .btn-danger {
+        background: var(--danger-color);
         border: none;
     }
 
-    .btn-primary:hover {
-        background: #2980b9;
+    .btn-danger:hover, .btn-danger:focus {
+        background: #dc2626;
+        box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.5), 0 2px 4px -2px rgba(239, 68, 68, 0.5);
+        transform: translateY(-2px);
+    }
+
+    .btn-light {
+        background: white;
+        border: 1px solid #e2e8f0;
+        color: var(--secondary-color);
+    }
+
+    .btn-light:hover, .btn-light:focus {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        color: var(--dark-color);
+    }
+
+    .btn-info {
+        background: #3b82f6;
+        border: none;
+        color: white;
+    }
+
+    .btn-info:hover, .btn-info:focus {
+        background: #2563eb;
+        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5), 0 2px 4px -2px rgba(59, 130, 246, 0.5);
         transform: translateY(-2px);
     }
 
     .btn-secondary {
-        background: #95a5a6;
+        background: #64748b;
         border: none;
+        color: white;
+    }
+
+    .btn-secondary:hover, .btn-secondary:focus {
+        background: #475569;
+        box-shadow: 0 4px 6px -1px rgba(100, 116, 139, 0.5), 0 2px 4px -2px rgba(100, 116, 139, 0.5);
+        transform: translateY(-2px);
     }
 
     .btn-success {
-        background: #2ecc71;
-        border: none;
-    }
-
-    .btn-info {
-        background: #3498db;
+        background: var(--success-color);
         border: none;
         color: white;
     }
 
-    .form-control {
-        border-radius: 8px;
-        padding: 0.6rem 1rem;
-        border: 1px solid #dee2e6;
+    .btn-success:hover, .btn-success:focus {
+        background: #059669;
+        box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.5), 0 2px 4px -2px rgba(16, 185, 129, 0.5);
+        transform: translateY(-2px);
     }
 
-    .form-control:focus {
-        border-color: #3498db;
-        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    .alert {
+        border: none;
+        border-radius: var(--border-radius);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
     }
 
-    .card-stats {
-        padding: 1rem;
-        text-align: center;
-        color: white;
+    .alert-success {
+        background-color: #ecfdf5;
+        color: #065f46;
+    }
+
+    .alert-danger {
+        background-color: #fef2f2;
+        color: #991b1b;
+    }
+
+    .alert-dismissible .btn-close {
+        color: inherit;
+        opacity: 0.8;
+    }
+
+    /* Stats Card Styling */
+    .stats-card {
+        border-radius: var(--border-radius);
+        background: white;
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .stats-card-body {
+        display: flex;
+        align-items: center;
+        padding: 1.5rem;
     }
 
     .stats-icon {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+
+    .stats-icon.primary {
+        background-color: rgba(37, 99, 235, 0.1);
+        color: var(--primary-color);
+    }
+
+    .stats-icon.success {
+        background-color: rgba(16, 185, 129, 0.1);
+        color: var(--success-color);
+    }
+
+    .stats-icon.warning {
+        background-color: rgba(245, 158, 11, 0.1);
+        color: var(--warning-color);
+    }
+
+    .stats-icon.danger {
+        background-color: rgba(239, 68, 68, 0.1);
+        color: var(--danger-color);
+    }
+
+    .stats-info {
+        flex-grow: 1;
     }
 
     .stats-value {
-        font-size: 1.8rem;
-        font-weight: bold;
-        margin-bottom: 0.5rem;
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        line-height: 1.2;
     }
 
     .stats-label {
-        font-size: 0.9rem;
-        opacity: 0.9;
+        color: var(--secondary-color);
+        font-size: 0.95rem;
+        margin: 0;
     }
 
-    /* DataTables Custom Styling */
-    .dataTables_wrapper .dataTables_length select,
+    /* Filter card */
+    .filter-card {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+    }
+
+    .filter-card .form-label {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #334155;
+    }
+
+    .filter-card .form-control {
+        border-radius: 0.5rem;
+        border: 1px solid #e2e8f0;
+        padding: 0.75rem 1rem;
+        background-color: #f8fafc;
+        transition: var(--transition);
+    }
+
+    .filter-card .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+    }
+
+    /* DataTables customization */
+    .dataTables_wrapper .dataTables_length select {
+        border: 1px solid #e2e8f0;
+        border-radius: 0.375rem;
+        padding: 0.5rem 2.5rem 0.5rem 1rem;
+        font-size: 0.875rem;
+        background-position: right 0.5rem center;
+    }
+
     .dataTables_wrapper .dataTables_filter input {
-        border: 1px solid #dee2e6;
-        border-radius: 6px;
-        padding: 0.375rem 0.75rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.375rem;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        min-width: 250px;
+    }
+
+    .dataTables_wrapper .dataTables_filter input:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        outline: none;
     }
 
     .dataTables_wrapper .dataTables_paginate .paginate_button {
-        border-radius: 6px;
-        margin: 0 2px;
+        border-radius: 0.375rem;
+        border: 1px solid #e2e8f0;
+        background: white;
+        color: var(--secondary-color) !important;
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        margin: 0 0.25rem;
+        transition: var(--transition);
     }
 
-    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-        background: #3498db;
-        border-color: #3498db;
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        border-color: var(--primary-color);
+        background: #f1f5f9;
+        color: var(--primary-color) !important;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
         color: white !important;
+    }
+
+    .dataTables_wrapper .dataTables_info {
+        padding-top: 1rem;
+        font-size: 0.875rem;
+        color: var(--secondary-color);
+    }
+
+    /* Badge colors */
+    .badge.bg-info {
+        background-color: #dbeafe !important;
+        color: #1e40af;
+    }
+
+    .badge.bg-success {
+        background-color: #d1fae5 !important;
+        color: #065f46;
+    }
+
+    .badge.bg-danger {
+        background-color: #fecaca !important;
+        color: #991b1b;
+    }
+
+    .badge.bg-warning {
+        background-color: #fef3c7 !important;
+        color: #92400e;
+    }
+
+    .badge.bg-light {
+        background-color: #f3f4f6 !important;
+        color: #374151;
+    }
+
+    /* Animasi untuk alert */
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .alert {
+        animation: fadeInDown 0.5s ease-out;
+    }
+
+    /* Tombol export */
+    .dt-buttons {
+        margin-bottom: 1rem;
+    }
+
+    .dt-buttons .btn {
+        margin-right: 0.5rem;
     }
 </style>
 
 <div class="container-fluid px-4">
     <div class="page-header">
-        <h1 class="mb-2">Data Penjualan</h1>
+        <h1 class="mb-2 fw-bold">Data Penjualan</h1>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="../index.php">Dashboard</a></li>
@@ -217,11 +524,22 @@ include_once '../includes/header.php';
         </nav>
     </div>
 
+    <!-- Tombol & Pesan -->
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+        <div></div>
+        <div class="d-flex align-items-center">
+            <i class="bi bi-clock-history text-muted me-2"></i>
+            <span class="text-muted">Terakhir diperbarui: <?= date('d M Y H:i') ?></span>
+        </div>
+    </div>
+
     <?php if (isset($_SESSION['success'])) : ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle me-2"></i>
-            <?= $_SESSION['success']; ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <i class="bi bi-check-circle-fill fs-5"></i>
+            <div>
+                <strong>Berhasil!</strong> <?= $_SESSION['success']; ?>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
         <?php unset($_SESSION['success']); ?>
     <?php endif; ?>
@@ -230,7 +548,7 @@ include_once '../includes/header.php';
     <div class="card filter-card mb-4">
         <form action="" method="get" class="row g-3">
             <div class="col-md-4">
-                <label class="form-label fw-bold">
+                <label class="form-label">
                     <i class="bi bi-calendar-event me-1"></i>
                     Dari Tanggal
                 </label>
@@ -238,7 +556,7 @@ include_once '../includes/header.php';
                        value="<?= isset($_GET['dari']) ? $_GET['dari'] : ''; ?>">
             </div>
             <div class="col-md-4">
-                <label class="form-label fw-bold">
+                <label class="form-label">
                     <i class="bi bi-calendar-event me-1"></i>
                     Sampai Tanggal
                 </label>
@@ -268,69 +586,77 @@ include_once '../includes/header.php';
     <div class="row g-4 mb-4">
         <!-- Total Transaksi -->
         <div class="col-xl-3 col-md-6">
-            <div class="card bg-primary summary-card">
-                <div class="card-stats">
-                    <div class="stats-icon">
+            <div class="card stats-card h-100">
+                <div class="stats-card-body">
+                    <div class="stats-icon primary">
                         <i class="bi bi-cart-check"></i>
                     </div>
-                    <div class="stats-value"><?= count($penjualan); ?></div>
-                    <div class="stats-label">Total Transaksi</div>
+                    <div class="stats-info">
+                        <div class="stats-value"><?= count($penjualan); ?></div>
+                        <p class="stats-label">Total Transaksi</p>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Total Pendapatan -->
         <div class="col-xl-3 col-md-6">
-            <div class="card bg-success summary-card">
-                <div class="card-stats">
-                    <div class="stats-icon">
+            <div class="card stats-card h-100">
+                <div class="stats-card-body">
+                    <div class="stats-icon success">
                         <i class="bi bi-currency-dollar"></i>
                     </div>
-                    <div class="stats-value">
-                        Rp <?= number_format(array_sum(array_column($penjualan, 'total')), 0, ',', '.'); ?>
+                    <div class="stats-info">
+                        <div class="stats-value">
+                            Rp <?= number_format(array_sum(array_column($penjualan, 'total')), 0, ',', '.'); ?>
+                        </div>
+                        <p class="stats-label">Total Pendapatan</p>
                     </div>
-                    <div class="stats-label">Total Pendapatan</div>
                 </div>
             </div>
         </div>
 
         <!-- Total Produk -->
         <div class="col-xl-3 col-md-6">
-            <div class="card bg-warning summary-card">
-                <div class="card-stats">
-                    <div class="stats-icon">
+            <div class="card stats-card h-100">
+                <div class="stats-card-body">
+                    <div class="stats-icon warning">
                         <i class="bi bi-box-seam"></i>
                     </div>
-                    <div class="stats-value"><?= $total_produk; ?></div>
-                    <div class="stats-label">Total Produk Terjual</div>
+                    <div class="stats-info">
+                        <div class="stats-value"><?= $total_produk; ?></div>
+                        <p class="stats-label">Total Produk Terjual</p>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Total Customer -->
         <div class="col-xl-3 col-md-6">
-            <div class="card bg-danger summary-card">
-                <div class="card-stats">
-                    <div class="stats-icon">
+            <div class="card stats-card h-100">
+                <div class="stats-card-body">
+                    <div class="stats-icon danger">
                         <i class="bi bi-people"></i>
                     </div>
-                    <div class="stats-value"><?= $total_customer; ?></div>
-                    <div class="stats-label">Total Customer</div>
+                    <div class="stats-info">
+                        <div class="stats-value"><?= $total_customer; ?></div>
+                        <p class="stats-label">Total Customer</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Sales Table -->
-    <div class="card table-card mb-4">
+    <div class="card mb-4">
         <div class="card-header">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <i class="bi bi-table text-primary me-2"></i>
+                    <i class="bi bi-table fs-5 text-primary me-2"></i>
                     <span class="fw-bold">Data Penjualan</span>
                 </div>
-                <button class="btn btn-sm btn-light" onclick="window.location.reload()">
-                    <i class="bi bi-arrow-clockwise me-1"></i>
+                <button class="btn btn-light btn-sm" onclick="window.location.reload()">
+                    <i class="bi bi-arrow-clockwise"></i>
                     Refresh
                 </button>
             </div>
@@ -361,7 +687,7 @@ include_once '../includes/header.php';
                                 <?= date('d/m/Y H:i', strtotime($row['tanggal'])); ?>
                             </td>
                             <td>
-                                <div class="fw-bold"><?= htmlspecialchars($row['nama_user'] ?? 'User tidak ditemukan'); ?></div>
+                                <div class="fw-bold text-primary"><?= htmlspecialchars($row['nama_user'] ?? 'User tidak ditemukan'); ?></div>
                             </td>
                             <td>
                                 <i class="bi bi-telephone text-muted me-1"></i>
@@ -382,8 +708,10 @@ include_once '../includes/header.php';
                                 Rp <?= number_format($row['kembalian'], 0, ',', '.'); ?>
                             </td>
                             <td>
-                                <i class="bi bi-person text-muted me-1"></i>
-                                <?= htmlspecialchars($row['admin_name']); ?>
+                                <span class="badge bg-light">
+                                    <i class="bi bi-person text-muted me-1"></i>
+                                    <?= htmlspecialchars($row['admin_name']); ?>
+                                </span>
                             </td>
                             <td>
                                 <div class="d-flex gap-1">
@@ -411,25 +739,34 @@ include_once '../includes/header.php';
 <script>
 $(document).ready(function() {
     $('#dataTable').DataTable({
-        responsive: true,
         language: {
-            url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/Indonesian.json'
+            url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/Indonesian.json',
+            searchPlaceholder: "Cari transaksi...",
+            search: "", // Remove search label text
+            lengthMenu: "_MENU_ data per halaman"
         },
-        dom: 'Bfrtip',
+        responsive: true,
+        pageLength: 10,
+        dom: '<"dt-buttons"B><"clear">lfrtip',
         buttons: [
             {
                 extend: 'excel',
                 text: '<i class="bi bi-file-earmark-excel me-1"></i>Export Excel',
-                className: 'btn btn-success btn-sm me-2'
+                className: 'btn btn-success btn-sm me-2',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+                }
             },
             {
                 extend: 'pdf',
                 text: '<i class="bi bi-file-earmark-pdf me-1"></i>Export PDF',
-                className: 'btn btn-danger btn-sm'
+                className: 'btn btn-danger btn-sm',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+                }
             }
         ],
         "order": [[1, "desc"]],
-        "pageLength": 25,
         "columnDefs": [
             { "width": "5%", "targets": 0 },
             { "width": "15%", "targets": 1 },
@@ -439,6 +776,13 @@ $(document).ready(function() {
             { "orderable": false, "targets": 9 }
         ]
     });
+
+    // Enhanced filter input
+    $('.dataTables_filter input').attr('placeholder', 'Cari transaksi...');
+    $('.dataTables_filter input').addClass('form-control-search');
+    
+    // Make filter input bigger
+    $('.dataTables_filter').addClass('mb-3');
 
     // Auto-hide alerts after 5 seconds
     setTimeout(function() {
@@ -479,13 +823,15 @@ function exportExcel() {
     let params = new URLSearchParams(window.location.search);
     let dari = params.get('dari') || '';
     let sampai = params.get('sampai') || '';
+    
+    // Gunakan export.php untuk versi sederhana (HTML ke XLS)
     window.location.href = `export.php?dari=${dari}&sampai=${sampai}`;
+    
+    // Jika nanti ingin menggunakan PhpSpreadsheet setelah diinstal:
+    // window.location.href = `export_phpspreadsheet.php?dari=${dari}&sampai=${sampai}`;
 }
 
 // Add print functionality
 function printInvoice(id) {
     window.open(`cetak.php?id=${id}`, '_blank', 'width=800,height=600');
 }
-</script>
-
-<?php include_once '../includes/footer.php'; ?>

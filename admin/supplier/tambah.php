@@ -53,230 +53,241 @@ if (isset($_POST['tambah'])) {
         }
     }
 }
+
+include_once '../includes/header.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tambah Supplier - Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
-    <style>
-        :root {
-            --primary-color: #4361ee;
-            --secondary-color: #3f37c9;
-            --text-color: #2b2d42;
-            --light-bg: #f8f9fa;
-            --border-radius: 10px;
-            --box-shadow: 0 0 20px rgba(0,0,0,0.08);
+<style>
+    :root {
+        --primary-color: #2563eb;
+        --primary-hover: #1d4ed8;
+        --primary-light: #dbeafe;
+        --secondary-color: #475569;
+        --success-color: #10b981;
+        --danger-color: #ef4444;
+        --warning-color: #f59e0b;
+        --border-radius: 0.75rem;
+        --box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+        --transition: all 0.3s ease;
+    }
+    
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        background-color: #f8fafc;
+        color: #334155;
+        min-height: 100vh;
+        line-height: 1.5;
+    }
+    
+    .container-fluid {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    h1 {
+        color: #1e293b;
+        font-weight: 700;
+        font-size: 1.875rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .breadcrumb {
+        margin-bottom: 2rem;
+    }
+    
+    .breadcrumb-item a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+        transition: var(--transition);
+    }
+    
+    .breadcrumb-item a:hover {
+        color: var(--primary-hover);
+        text-decoration: underline;
+    }
+    
+    .breadcrumb-item.active {
+        color: var(--secondary-color);
+        font-weight: 400;
+    }
+    
+    .card {
+        border: none;
+        box-shadow: var(--box-shadow);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        transition: var(--transition);
+        height: 100%;
+        animation: fadeIn 0.5s ease-out;
+    }
+    
+    .card:hover {
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    
+    .card-header {
+        background: linear-gradient(45deg, var(--primary-color), #3b82f6);
+        color: white;
+        border-bottom: none;
+        padding: 1.25rem 1.5rem;
+        font-weight: 600;
+        border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
+    }
+    
+    .card-header i {
+        font-size: 1.25rem;
+        vertical-align: middle;
+        margin-right: 0.5rem;
+    }
+    
+    .card-body {
+        padding: 2rem;
+        background-color: white;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e2e8f0;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        color: #1e293b;
+        background-color: #f8fafc;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.15);
+        background-color: white;
+    }
+    
+    .input-group-text {
+        border-radius: 0.5rem 0 0 0.5rem;
+        background-color: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-right: none;
+        color: #475569;
+        font-weight: 500;
+    }
+    
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        font-size: 1rem;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-primary {
+        background: var(--primary-color);
+        border: none;
+        color: white;
+    }
+    
+    .btn-primary:hover, .btn-primary:focus {
+        background: var(--primary-hover);
+        box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3), 0 2px 4px -2px rgba(37, 99, 235, 0.3);
+        transform: translateY(-2px);
+    }
+    
+    .btn-secondary {
+        background: white;
+        border: 1px solid #e2e8f0;
+        color: var(--secondary-color);
+    }
+    
+    .btn-secondary:hover, .btn-secondary:focus {
+        background: #f8fafc;
+        color: #1e293b;
+        border-color: #cbd5e1;
+        transform: translateY(-2px);
+    }
+    
+    .alert {
+        border: none;
+        border-radius: var(--border-radius);
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .alert-danger {
+        background-color: #fef2f2;
+        color: #b91c1c;
+    }
+    
+    .invalid-feedback {
+        font-size: 0.875rem;
+        color: var(--danger-color);
+        margin-top: 0.375rem;
+    }
+    
+    /* Animation */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+    }
+    
+    .pulse {
+        animation: pulse 2s infinite;
+    }
+    
+    textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+    
+    .form-text {
+        color: #64748b;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+    
+    /* Custom select styling */
+    .form-select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%232563eb' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3E%3C/svg%3E");
+        background-size: 16px 12px;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .container-fluid {
+            padding: 1rem;
         }
-
-        body {
-            background-color: var(--light-bg);
-            padding-top: 56px;
+        
+        .card-body {
+            padding: 1.5rem;
         }
-
-        .navbar {
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        
+        h1 {
+            font-size: 1.5rem;
         }
-
-        .navbar-brand {
-            font-weight: 600;
-            font-size: 1.25rem;
-            color: white !important;
+        
+        .d-flex.justify-content-between {
+            flex-direction: column;
+            gap: 1rem;
         }
-
-        .navbar .nav-link {
-            color: rgba(255,255,255,0.9) !important;
-            transition: color 0.2s;
-        }
-
-        .navbar .nav-link:hover {
-            color: white !important;
-        }
-
-        #sidebar {
-            height: calc(100vh - 56px);
-            position: fixed;
-            top: 56px;
-            left: 0;
-            width: 250px;
-            padding-top: 20px;
-            background: white;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
-        }
-
-        #sidebar .nav-link {
-            padding: 12px 20px;
-            color: var(--text-color);
-            transition: all 0.3s;
-        }
-
-        #sidebar .nav-link:hover,
-        #sidebar .nav-link.active {
-            background-color: var(--light-bg);
-            color: var(--primary-color);
-        }
-
-        #sidebar .nav-link.active {
-            font-weight: 600;
-        }
-
-        #sidebar .nav-link i {
-            margin-right: 10px;
-        }
-
-        .content-wrapper {
-            margin-left: 250px;
-            padding: 20px;
-        }
-
-        .card {
-            border: none;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-        }
-
-        .card-header {
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
-            padding: 1rem 1.25rem;
-            border: none;
-        }
-
-        .form-label {
-            font-weight: 500;
-            color: var(--text-color);
-        }
-
-        .form-control, .form-select {
-            border: 2px solid #e9ecef;
-            border-radius: var(--border-radius);
-            padding: 0.625rem 1rem;
-            transition: all 0.2s;
-        }
-
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.15);
-        }
-
+        
         .btn {
-            padding: 0.625rem 1.25rem;
-            border-radius: var(--border-radius);
-            font-weight: 500;
-            transition: all 0.3s;
+            width: 100%;
         }
+    }
+</style>
 
-        .btn-primary {
-            background: var(--primary-color);
-            border: none;
-        }
-
-        .btn-primary:hover {
-            background: var(--secondary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.2);
-        }
-
-        .alert {
-            border-radius: var(--border-radius);
-            border: none;
-        }
-
-        .alert-danger {
-            background-color: #fff5f7;
-            color: #dc3545;
-            border-left: 4px solid #dc3545;
-        }
-
-        @media (max-width: 768px) {
-            #sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-            }
-            
-            .content-wrapper {
-                margin-left: 0;
-                padding: 15px;
-            }
-            
-            .btn {
-                width: 100%;
-                margin: 0.25rem 0;
-            }
-            
-            .d-flex.justify-content-between {
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-        }
-    </style>
-</head>
-<body>
-
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="../index.php">Unesa Laptop</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="../../auth/logout.php">Sign Out</a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
-
-<!-- Sidebar -->
-<nav id="sidebar" class="col-md-3 col-lg-2">
-    <div class="position-sticky">
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link" href="../index.php">
-                    <i class="bi bi-speedometer2"></i> Dashboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="../barang/index.php">
-                    <i class="bi bi-box"></i> Barang
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="../kategori/index.php">
-                    <i class="bi bi-tags"></i> Kategori
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="../merk/index.php">
-                    <i class="bi bi-bookmark"></i> Merk
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" href="index.php">
-                    <i class="bi bi-truck"></i> Supplier
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="../penjualan/index.php">
-                    <i class="bi bi-cart"></i> Penjualan
-                </a>
-            </li>
-        </ul>
-    </div>
-</nav>
-
-<!-- Main content -->
-<div class="content-wrapper">
+<div class="container-fluid px-4">
     <h1 class="mt-4">Tambah Supplier</h1>
     <ol class="breadcrumb mb-4">
         <li class="breadcrumb-item"><a href="../index.php">Dashboard</a></li>
@@ -285,7 +296,7 @@ if (isset($_POST['tambah'])) {
     </ol>
 
     <div class="row">
-        <div class="col-xl-6">
+        <div class="col-xl-6 mx-auto">
             <div class="card mb-4">
                 <div class="card-header">
                     <i class="bi bi-plus-circle me-1"></i>
@@ -294,57 +305,94 @@ if (isset($_POST['tambah'])) {
                 <div class="card-body">
                     <?php if (isset($error_msg)) : ?>
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <?= $error_msg; ?>
+                            <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                            <div>
+                                <strong>Gagal!</strong> <?= $error_msg; ?>
+                            </div>
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     <?php endif; ?>
 
                     <form action="" method="post" class="needs-validation" novalidate>
-                        <div class="mb-3">
+                        <div class="mb-4">
                             <label for="nama" class="form-label">Nama Supplier</label>
-                            <input type="text" class="form-control" id="nama" name="nama" 
-                                   value="<?= isset($_POST['nama']) ? $_POST['nama'] : ''; ?>" required>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="bi bi-building text-primary"></i>
+                                </span>
+                                <input type="text" class="form-control" id="nama" name="nama" 
+                                       value="<?= isset($_POST['nama']) ? htmlspecialchars($_POST['nama']) : ''; ?>" 
+                                       placeholder="Masukkan nama supplier" required>
+                            </div>
                             <div class="invalid-feedback">
                                 Nama supplier harus diisi!
                             </div>
+                            <div class="form-text">
+                                Contoh: PT Sigma Computer, CV Laptop Jaya, dll.
+                            </div>
                         </div>
 
-                        <div class="mb-3">
+                        <div class="mb-4">
                             <label for="alamat" class="form-label">Alamat</label>
-                            <textarea class="form-control" id="alamat" name="alamat" rows="3"><?= isset($_POST['alamat']) ? $_POST['alamat'] : ''; ?></textarea>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="bi bi-geo-alt text-primary"></i>
+                                </span>
+                                <textarea class="form-control" id="alamat" name="alamat" rows="3" 
+                                          placeholder="Masukkan alamat lengkap"><?= isset($_POST['alamat']) ? htmlspecialchars($_POST['alamat']) : ''; ?></textarea>
+                            </div>
+                            <div class="form-text">
+                                Alamat lengkap supplier. Opsional.
+                            </div>
                         </div>
 
-                        <div class="mb-3">
+                        <div class="mb-4">
                             <label for="telepon" class="form-label">Nomor Telepon</label>
-                            <input type="text" class="form-control" id="telepon" name="telepon" 
-                                   value="<?= isset($_POST['telepon']) ? $_POST['telepon'] : ''; ?>" required>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="bi bi-telephone text-primary"></i>
+                                </span>
+                                <input type="text" class="form-control" id="telepon" name="telepon" 
+                                       value="<?= isset($_POST['telepon']) ? htmlspecialchars($_POST['telepon']) : ''; ?>" 
+                                       placeholder="08xxxxxxxxxx" required>
+                            </div>
                             <div class="invalid-feedback">
                                 Nomor telepon harus diisi dengan format yang benar!
                             </div>
-                            <small class="text-muted">Format: 081234567890 (10-12 digit)</small>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="barang_id" class="form-label">Produk</label>
-                            <select class="form-select" id="barang_id" name="barang_id" required>
-                                <option value="">Pilih Produk</option>
-                                <?php foreach ($barang as $item) : ?>
-                                    <option value="<?= $item['barang_id']; ?>" 
-                                            <?= (isset($_POST['barang_id']) && $_POST['barang_id'] == $item['barang_id']) ? 'selected' : ''; ?>>
-                                        <?= $item['nama_barang']; ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                            <div class="invalid-feedback">
-                                Pilih produk yang disupply!
+                            <div class="form-text">
+                                Format: 081234567890 (10-12 digit tanpa spasi/karakter khusus)
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-between">
+                        <div class="mb-4">
+                            <label for="barang_id" class="form-label">Produk</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="bi bi-laptop text-primary"></i>
+                                </span>
+                                <select class="form-select" id="barang_id" name="barang_id" required>
+                                    <option value="">Pilih Produk</option>
+                                    <?php foreach ($barang as $item) : ?>
+                                        <option value="<?= $item['barang_id']; ?>" 
+                                                <?= (isset($_POST['barang_id']) && $_POST['barang_id'] == $item['barang_id']) ? 'selected' : ''; ?>>
+                                            <?= htmlspecialchars($item['nama_barang']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="invalid-feedback">
+                                Pilih produk yang disupply!
+                            </div>
+                            <div class="form-text">
+                                Pilih laptop yang disediakan oleh supplier ini.
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
                             <a href="index.php" class="btn btn-secondary">
                                 <i class="bi bi-arrow-left"></i> Kembali
                             </a>
-                            <button type="submit" name="tambah" class="btn btn-primary">
+                            <button type="submit" name="tambah" class="btn btn-primary pulse">
                                 <i class="bi bi-save"></i> Simpan
                             </button>
                         </div>
@@ -355,16 +403,17 @@ if (isset($_POST['tambah'])) {
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// Form validation
-(function() {
-    'use strict'
+// Form Validation
+(function () {
+    'use strict';
     
-    const forms = document.querySelectorAll('.needs-validation');
+    // Fetch all forms we want to apply validation styles to
+    var forms = document.querySelectorAll('.needs-validation');
     
-    Array.from(forms).forEach(form => {
-        form.addEventListener('submit', event => {
+    // Loop over them and prevent submission
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
             if (!form.checkValidity()) {
                 event.preventDefault();
                 event.stopPropagation();
@@ -399,7 +448,18 @@ document.getElementById('telepon').addEventListener('input', function(e) {
     // Update nilai input
     this.value = value;
 });
+
+// Auto-hide alerts after 5 seconds
+setTimeout(function() {
+    document.querySelectorAll('.alert').forEach(function(alert) {
+        var bsAlert = new bootstrap.Alert(alert);
+        bsAlert.close();
+    });
+}, 5000);
+
+// Focus on input field when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('nama').focus();
+});
 </script>
 
-</body>
-</html>

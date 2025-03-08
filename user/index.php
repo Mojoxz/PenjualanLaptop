@@ -325,7 +325,7 @@ body {
     color: #1e293b;
     margin-bottom: 10px;
     transition: var(--transition);
-    height: 2.4rem; /* Fixed height for titles */
+    height: 2.6rem; /* Fixed height for titles */
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 2;

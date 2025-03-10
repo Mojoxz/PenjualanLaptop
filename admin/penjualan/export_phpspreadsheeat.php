@@ -16,10 +16,11 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
 // Cek autentikasi admin
-if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../../auth/login.php");
+if (!isset($_SESSION['login']) || !isset($_SESSION['role']) || ($_SESSION['role'] != 'admin' && $_SESSION['role'] != 'superadmin')) {
+    header("Location: ../auth/adminlogin.php");
     exit;
 }
 
@@ -33,6 +34,15 @@ if (isset($_GET['dari']) && isset($_GET['sampai'])) {
     }
 }
 
+// Mendapatkan parameter sort dan order jika ada
+$sort_column = isset($_GET['sort']) ? $_GET['sort'] : 'p.tanggal';
+$sort_order = isset($_GET['order']) ? $_GET['order'] : 'DESC';
+
+// Validasi kolom dan order untuk keamanan
+$allowed_columns = ['p.tanggal', 'p.penjualan_id', 'u.nama', 'u.telepon', 'pb.jenis_pembayaran', 'p.total', 'p.bayar', 'p.kembalian', 'a.nama'];
+$sort_column = in_array($sort_column, $allowed_columns) ? $sort_column : 'p.tanggal';
+$sort_order = in_array(strtoupper($sort_order), ['ASC', 'DESC']) ? strtoupper($sort_order) : 'DESC';
+
 // Ambil data penjualan
 $query = "SELECT p.*, a.nama as admin_name, u.nama as nama_user, u.telepon, pb.jenis_pembayaran,
           (SELECT SUM(dp.subtotal) FROM tb_detail_penjualan dp WHERE dp.penjualan_id = p.penjualan_id) as total_penjualan 
@@ -42,7 +52,7 @@ $query = "SELECT p.*, a.nama as admin_name, u.nama as nama_user, u.telepon, pb.j
           LEFT JOIN tb_user u ON pmb.user_id = u.user_id
           LEFT JOIN tb_pembayaran pb ON pmb.pembayaran_id = pb.pembayaran_id
           $where
-          ORDER BY p.tanggal DESC";
+          ORDER BY $sort_column $sort_order";
 $penjualan = query($query);
 
 // Hitung total untuk ringkasan
@@ -50,16 +60,16 @@ $total_pendapatan = array_sum(array_column($penjualan, 'total'));
 
 // Query untuk mendapatkan total produk terjual
 $query_produk = "SELECT COALESCE(SUM(dp.jumlah), 0) as total 
-                 FROM tb_detail_penjualan dp 
-                 JOIN tb_penjualan p ON dp.penjualan_id = p.penjualan_id 
-                 " . str_replace('p.tanggal', 'p.tanggal', $where);
+                FROM tb_detail_penjualan dp 
+                JOIN tb_penjualan p ON dp.penjualan_id = p.penjualan_id 
+                " . (empty($where) ? "" : $where);
 $total_produk = query($query_produk)[0]['total'];
 
 // Query untuk mendapatkan total customer
 $query_customer = "SELECT COUNT(DISTINCT pmb.user_id) as total 
                   FROM tb_pembelian pmb 
                   JOIN tb_penjualan p ON pmb.id_pembelian = p.penjualan_id 
-                  " . str_replace('p.tanggal', 'p.tanggal', $where);
+                  " . (empty($where) ? "" : $where);
 $total_customer = query($query_customer)[0]['total'];
 
 // Judul periode laporan
@@ -140,6 +150,7 @@ $styleHeader = [
     ],
     'alignment' => [
         'horizontal' => Alignment::HORIZONTAL_CENTER,
+        'vertical' => Alignment::VERTICAL_CENTER,
     ],
     'borders' => [
         'allBorders' => [
@@ -172,16 +183,20 @@ foreach ($penjualan as $data) {
     $sheet->setCellValue('I' . $row, $data['kembalian']);
     $sheet->setCellValue('J' . $row, $data['admin_name']);
     
-    // Format angka
+    // Format angka untuk nilai rupiah
     $sheet->getStyle('G' . $row)->getNumberFormat()->setFormatCode('#,##0');
     $sheet->getStyle('H' . $row)->getNumberFormat()->setFormatCode('#,##0');
     $sheet->getStyle('I' . $row)->getNumberFormat()->setFormatCode('#,##0');
+    
+    // Alignment
+    $sheet->getStyle('A' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+    $sheet->getStyle('G' . $row . ':I' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
     
     $grand_total += $data['total'];
     $row++;
 }
 
-// Style borders untuk data
+// Style borders untuk semua data
 $styleData = [
     'borders' => [
         'allBorders' => [
@@ -219,6 +234,7 @@ $styleGrandTotal = [
 ];
 $sheet->getStyle('A' . $row . ':J' . $row)->applyFromArray($styleGrandTotal);
 $sheet->getStyle('G' . $row)->getNumberFormat()->setFormatCode('#,##0');
+$sheet->getStyle('G' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 
 // Tanda tangan
 $row += 2;
@@ -227,6 +243,12 @@ $row++;
 $sheet->setCellValue('H' . $row, 'Dibuat oleh,');
 $row += 4;
 $sheet->setCellValue('H' . $row, $_SESSION['nama'] ?? 'Admin');
+
+// Auto filter untuk header tabel
+$sheet->setAutoFilter('A9:J9');
+
+// Freeze pane pada header tabel
+$sheet->freezePane('A10');
 
 // Atur header untuk download
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');

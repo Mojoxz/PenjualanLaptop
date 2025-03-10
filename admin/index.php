@@ -3,8 +3,8 @@ session_start();
 require_once '../config/koneksi.php';
 
 // Cek login
-if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../auth/login.php");
+if (!isset($_SESSION['login']) || !isset($_SESSION['role']) || ($_SESSION['role'] != 'admin' && $_SESSION['role'] != 'superadmin')) {
+    header("Location: ../auth/adminlogin.php");
     exit;
 }
 
@@ -17,6 +17,7 @@ $total_produk = query("SELECT COUNT(*) as total FROM tb_barang")[0]['total'];
 $total_kategori = query("SELECT COUNT(*) as total FROM tb_kategori")[0]['total'];
 $total_penjualan = query("SELECT COUNT(*) as total FROM tb_penjualan")[0]['total'];
 $total_user = query("SELECT COUNT(*) as total FROM tb_user")[0]['total'];
+$total_admin = query("SELECT COUNT(*) as total FROM tb_admin")[0]['total'];
 
 // Query penjualan terbaru dengan info user
 $recent_sales = query("SELECT p.*, a.nama as admin_name, u.nama as nama_user, u.telepon,
@@ -160,6 +161,7 @@ body {
 .stat-card.success { border-left: 5px solid var(--success-color); }
 .stat-card.warning { border-left: 5px solid var(--warning-color); }
 .stat-card.danger { border-left: 5px solid var(--danger-color); }
+.stat-card.info { border-left: 5px solid var(--info-color); }
 
 .stat-card .card-body {
     padding: 1.75rem;
@@ -180,6 +182,7 @@ body {
 .stat-card.success .stat-icon { background: rgba(16, 185, 129, 0.1); color: var(--success-color); }
 .stat-card.warning .stat-icon { background: rgba(245, 158, 11, 0.1); color: var(--warning-color); }
 .stat-card.danger .stat-icon { background: rgba(239, 68, 68, 0.1); color: var(--danger-color); }
+.stat-card.info .stat-icon { background: rgba(59, 130, 246, 0.1); color: var(--info-color); }
 
 .stat-card:hover .stat-icon {
     transform: scale(1.1);
@@ -463,6 +466,13 @@ main p.text-muted {
                                 Penjualan
                             </a>
                         </li>
+                        <!-- Tambahkan menu Manajemen Admin -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="user/index.php">
+                                <i class="bi bi-people"></i>
+                                Manajemen Admin
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </nav>
@@ -561,6 +571,26 @@ main p.text-muted {
                                 </div>
                                 <div class="progress mt-3" style="height: 4px;">
                                     <div class="progress-bar bg-danger" style="width: 75%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Total Admin -->
+                    <div class="col-xl-3 col-md-6">
+                        <div class="card stat-card info h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="stat-label">Total Admin</div>
+                                        <div class="stat-value"><?= $total_admin ?></div>
+                                    </div>
+                                    <div class="stat-icon">
+                                        <i class="bi bi-person-badge fs-3"></i>
+                                    </div>
+                                </div>
+                                <div class="progress mt-3" style="height: 4px;">
+                                    <div class="progress-bar bg-info" style="width: 65%;"></div>
                                 </div>
                             </div>
                         </div>
@@ -729,7 +759,7 @@ main p.text-muted {
                                                 <div class="h5 mb-0"><?= date('d/m/Y H:i') ?></div>
                                             </div>
                                         </div>
-                                    </div>
+                                        </div>
                                     <div class="col-md-6">
                                         <div class="d-flex align-items-center mb-3">
                                             <div class="bg-light p-3 rounded me-3">

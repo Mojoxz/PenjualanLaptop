@@ -14,12 +14,18 @@ function query($query) {
     global $conn;
     $result = mysqli_query($conn, $query);
     $rows = [];
-    while ($row = mysqli_fetch_assoc($result)) {
-        $rows[] = $row;
+    
+    if ($result) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $rows[] = $row;
+        }
+    } else {
+        // Mencatat error jika query gagal
+        error_log("Query error: " . mysqli_error($conn));
     }
+    
     return $rows;
 }
-
 function tambah($table, $data) {
     global $conn;
     $columns = implode(", ", array_keys($data));

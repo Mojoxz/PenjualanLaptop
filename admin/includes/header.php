@@ -1,7 +1,7 @@
 <?php
 // Cek login
-if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../auth/login.php");
+if (!isset($_SESSION['login']) || !isset($_SESSION['role']) || ($_SESSION['role'] != 'admin' && $_SESSION['role'] != 'superadmin')) {
+    header("Location: ../auth/adminlogin.php");
     exit;
 }
 

@@ -2,15 +2,19 @@
 session_start();
 require_once '../../config/koneksi.php';
 
-// Existing PHP code remains unchanged
-if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../../auth/login.php");
+// Cek autentikasi admin
+if (!isset($_SESSION['login']) || !isset($_SESSION['role']) || ($_SESSION['role'] != 'admin' && $_SESSION['role'] != 'superadmin')) {
+    header("Location: ../auth/adminlogin.php");
     exit;
 }
 
-// All existing query logic remains the same
+// Inisialisasi variabel-variabel filtering
 $where = "";
 $where_date = "";
+$dari = "";
+$sampai = "";
+
+// Filter berdasarkan tanggal jika ada
 if (isset($_GET['dari']) && isset($_GET['sampai'])) {
     $dari = $_GET['dari'];
     $sampai = $_GET['sampai'];
@@ -20,7 +24,7 @@ if (isset($_GET['dari']) && isset($_GET['sampai'])) {
     }
 }
 
-// All other queries remain unchanged
+// Query untuk mendapatkan data penjualan
 $query = "SELECT p.*, a.nama as admin_name, u.nama as nama_user, u.telepon, pb.jenis_pembayaran,
           (SELECT SUM(dp.subtotal) FROM tb_detail_penjualan dp WHERE dp.penjualan_id = p.penjualan_id) as total_penjualan 
           FROM tb_penjualan p 
@@ -32,19 +36,21 @@ $query = "SELECT p.*, a.nama as admin_name, u.nama as nama_user, u.telepon, pb.j
           ORDER BY p.tanggal DESC";
 $penjualan = query($query);
 
-// Keep other queries
+// Query untuk mendapatkan total produk terjual
 $query_produk = "SELECT COALESCE(SUM(dp.jumlah), 0) as total 
-                 FROM tb_detail_penjualan dp 
-                 JOIN tb_penjualan p ON dp.penjualan_id = p.penjualan_id 
-                 " . str_replace('p.tanggal', 'p.tanggal', $where);
+                FROM tb_detail_penjualan dp 
+                JOIN tb_penjualan p ON dp.penjualan_id = p.penjualan_id 
+                " . (empty($where) ? "" : str_replace('WHERE', 'WHERE', $where));
 $total_produk = query($query_produk)[0]['total'];
 
+// Query untuk mendapatkan total customer
 $query_customer = "SELECT COUNT(DISTINCT pmb.user_id) as total 
                   FROM tb_pembelian pmb 
                   JOIN tb_penjualan p ON pmb.id_pembelian = p.penjualan_id 
-                  " . str_replace('p.tanggal', 'p.tanggal', $where);
+                  " . (empty($where) ? "" : str_replace('WHERE', 'WHERE', $where));
 $total_customer = query($query_customer)[0]['total'];
 
+// Memasukkan header
 include_once '../includes/header.php';
 ?>
 
@@ -514,6 +520,7 @@ include_once '../includes/header.php';
 </style>
 
 <div class="container-fluid px-4">
+    <!-- Header Halaman -->
     <div class="page-header">
         <h1 class="mb-2 fw-bold">Data Penjualan</h1>
         <nav aria-label="breadcrumb">
@@ -533,6 +540,7 @@ include_once '../includes/header.php';
         </div>
     </div>
 
+    <!-- Alert Notifikasi -->
     <?php if (isset($_SESSION['success'])) : ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="bi bi-check-circle-fill fs-5"></i>
@@ -573,10 +581,15 @@ include_once '../includes/header.php';
                         <a href="index.php" class="btn btn-secondary">
                             <i class="bi bi-x-circle me-1"></i> Reset
                         </a>
-                        <button type="button" class="btn btn-success" onclick="exportExcel()">
-                            <i class="bi bi-file-excel me-1"></i> Export
-                        </button>
                     <?php endif; ?>
+                    <!-- Tombol Export yang Terpisah dari Kondisi Filter -->
+                    <button type="button" class="btn btn-success" onclick="exportExcel()">
+                        <i class="bi bi-file-excel me-1"></i> Export Excel
+                    </button>
+                    <!-- Tambahan tombol untuk PhpSpreadsheet jika sudah diinstal -->
+                    <button type="button" class="btn btn-info" onclick="exportExcelAdvanced()">
+                        <i class="bi bi-file-excel me-1"></i> Excel Format Baik
+                    </button>
                 </div>
             </div>
         </form>
@@ -736,102 +749,152 @@ include_once '../includes/header.php';
     </div>
 </div>
 
+<!-- Script JavaScript untuk Export dan DataTables -->
+<!-- Script JavaScript untuk Export dan DataTables -->
 <script>
-$(document).ready(function() {
-    $('#dataTable').DataTable({
-        language: {
-            url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/Indonesian.json',
-            searchPlaceholder: "Cari transaksi...",
-            search: "", // Remove search label text
-            lengthMenu: "_MENU_ data per halaman"
-        },
-        responsive: true,
-        pageLength: 10,
-        dom: '<"dt-buttons"B><"clear">lfrtip',
-        buttons: [
-            {
-                extend: 'excel',
-                text: '<i class="bi bi-file-earmark-excel me-1"></i>Export Excel',
-                className: 'btn btn-success btn-sm me-2',
-                exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5, 6, 7, 8]
-                }
-            },
-            {
-                extend: 'pdf',
-                text: '<i class="bi bi-file-earmark-pdf me-1"></i>Export PDF',
-                className: 'btn btn-danger btn-sm',
-                exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5, 6, 7, 8]
-                }
-            }
-        ],
-        "order": [[1, "desc"]],
-        "columnDefs": [
-            { "width": "5%", "targets": 0 },
-            { "width": "15%", "targets": 1 },
-            { "width": "10%", "targets": [3, 4, 8] },
-            { "width": "12%", "targets": [5, 6, 7] },
-            { "width": "8%", "targets": 9 },
-            { "orderable": false, "targets": 9 }
-        ]
-    });
-
-    // Enhanced filter input
-    $('.dataTables_filter input').attr('placeholder', 'Cari transaksi...');
-    $('.dataTables_filter input').addClass('form-control-search');
-    
-    // Make filter input bigger
-    $('.dataTables_filter').addClass('mb-3');
-
-    // Auto-hide alerts after 5 seconds
-    setTimeout(function() {
-        $('.alert').fadeOut('slow');
-    }, 5000);
-
-    // Initialize tooltips
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-
-    // Add animation to statistics cards
-    function animateValue(obj, start, end, duration) {
-        let startTimestamp = null;
-        const step = (timestamp) => {
-            if (!startTimestamp) startTimestamp = timestamp;
-            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-            obj.innerHTML = Math.floor(progress * (end - start) + start).toLocaleString();
-            if (progress < 1) {
-                window.requestAnimationFrame(step);
-            }
-        };
-        window.requestAnimationFrame(step);
-    }
-
-    // Animate statistics on page load
-    document.querySelectorAll('.stats-value').forEach(element => {
-        const value = parseInt(element.innerText.replace(/\D/g,''));
-        if (!isNaN(value)) {
-            element.innerText = '0';
-            animateValue(element, 0, value, 1000);
-        }
-    });
-});
-
+/**
+ * Fungsi untuk export data ke Excel dengan format sederhana
+ */
 function exportExcel() {
-    let params = new URLSearchParams(window.location.search);
-    let dari = params.get('dari') || '';
-    let sampai = params.get('sampai') || '';
+    // Mendapatkan parameter filter dari URL saat ini
+    var urlParams = new URLSearchParams(window.location.search);
+    var dari = urlParams.get('dari') || '';
+    var sampai = urlParams.get('sampai') || '';
     
-    // Gunakan export.php untuk versi sederhana (HTML ke XLS)
-    window.location.href = `export.php?dari=${dari}&sampai=${sampai}`;
+    // Variabel untuk menyimpan informasi sorting
+    var sort = 'p.tanggal';  // Default sort column
+    var sortOrder = 'DESC';  // Default sort order
     
-    // Jika nanti ingin menggunakan PhpSpreadsheet setelah diinstal:
-    // window.location.href = `export_phpspreadsheet.php?dari=${dari}&sampai=${sampai}`;
+    // Jika DataTables tersedia, ambil informasi sorting dari sana
+    if (typeof jQuery !== 'undefined' && jQuery.fn.DataTable && jQuery.fn.DataTable.isDataTable('#dataTable')) {
+        var dataTable = jQuery('#dataTable').DataTable();
+        var order = dataTable.order();
+        
+        if (order && order.length > 0) {
+            // Pemetaan indeks kolom DataTables ke nama kolom database
+            var columnMapping = [
+                null,           // Kolom No (tidak perlu diurutkan di database)
+                'p.tanggal',    // Kolom Tanggal
+                'u.nama',       // Kolom Pembeli
+                'u.telepon',    // Kolom Telepon
+                'pb.jenis_pembayaran', // Kolom Jenis Pembayaran
+                'p.total',      // Kolom Total
+                'p.bayar',      // Kolom Bayar
+                'p.kembalian',  // Kolom Kembalian
+                'a.nama'        // Kolom Admin
+            ];
+            
+            // Mendapatkan indeks kolom dan arah pengurutan dari DataTables
+            var columnIndex = order[0][0];
+            var direction = order[0][1];
+            
+            // Memastikan indeks kolom valid untuk pemetaan kita
+            if (columnIndex < columnMapping.length && columnMapping[columnIndex]) {
+                sort = columnMapping[columnIndex];
+                sortOrder = direction.toUpperCase();
+            }
+        }
+    }
+    
+    // Membuat URL export
+    var exportUrl = "export.php?";
+    var params = [];
+    
+    if (dari) {
+        params.push("dari=" + dari);
+    }
+    if (sampai) {
+        params.push("sampai=" + sampai);
+    }
+    
+    // Tambahkan parameter sorting ke URL export
+    params.push("sort=" + sort);
+    params.push("order=" + sortOrder);
+    
+    // Gabungkan semua parameter ke URL
+    exportUrl += params.join('&');
+    
+    // Arahkan ke script export
+    window.location.href = exportUrl;
 }
 
-// Add print functionality
-function printInvoice(id) {
-    window.open(`cetak.php?id=${id}`, '_blank', 'width=800,height=600');
+/**
+ * Fungsi untuk export Excel dengan format yang lebih baik menggunakan PhpSpreadsheet
+ */
+function exportExcelAdvanced() {
+    // Mendapatkan parameter filter dari URL saat ini
+    var urlParams = new URLSearchParams(window.location.search);
+    var dari = urlParams.get('dari') || '';
+    var sampai = urlParams.get('sampai') || '';
+    
+    // Variabel untuk menyimpan informasi sorting
+    var sort = 'p.tanggal';  // Default sort column
+    var sortOrder = 'DESC';  // Default sort order
+    
+    // Jika DataTables tersedia, ambil informasi sorting dari sana
+    if (typeof jQuery !== 'undefined' && jQuery.fn.DataTable && jQuery.fn.DataTable.isDataTable('#dataTable')) {
+        var dataTable = jQuery('#dataTable').DataTable();
+        var order = dataTable.order();
+        
+        if (order && order.length > 0) {
+            // Pemetaan indeks kolom DataTables ke nama kolom database
+            var columnMapping = [
+                null,           // Kolom No (tidak perlu diurutkan di database)
+                'p.tanggal',    // Kolom Tanggal
+                'u.nama',       // Kolom Pembeli
+                'u.telepon',    // Kolom Telepon
+                'pb.jenis_pembayaran', // Kolom Jenis Pembayaran
+                'p.total',      // Kolom Total
+                'p.bayar',      // Kolom Bayar
+                'p.kembalian',  // Kolom Kembalian
+                'a.nama'        // Kolom Admin
+            ];
+            
+            // Mendapatkan indeks kolom dan arah pengurutan dari DataTables
+            var columnIndex = order[0][0];
+            var direction = order[0][1];
+            
+            // Memastikan indeks kolom valid untuk pemetaan kita
+            if (columnIndex < columnMapping.length && columnMapping[columnIndex]) {
+                sort = columnMapping[columnIndex];
+                sortOrder = direction.toUpperCase();
+            }
+        }
+    }
+    
+    // Membuat URL export
+    var exportUrl = "export_phpspreadsheet.php?";
+    var params = [];
+    
+    if (dari) {
+        params.push("dari=" + dari);
+    }
+    if (sampai) {
+        params.push("sampai=" + sampai);
+    }
+    
+    // Tambahkan parameter sorting ke URL export
+    params.push("sort=" + sort);
+    params.push("order=" + sortOrder);
+    
+    // Gabungkan semua parameter ke URL
+    exportUrl += params.join('&');
+    
+    // Arahkan ke script export dengan PhpSpreadsheet
+    window.location.href = exportUrl;
 }
+
+// Tunggu sampai dokumen siap dan jQuery tersedia
+document.addEventListener('DOMContentLoaded', function() {
+    // Inisialisasi DataTables jika jQuery tersedia
+    if (typeof jQuery !== 'undefined' && jQuery.fn.DataTable) {
+        jQuery('#dataTable').DataTable({
+            responsive: true,
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/Indonesian.json'
+            },
+            order: [[1, 'desc']] // Default sort by tanggal (column 1) in descending order
+        });
+    }
+});
+</script>

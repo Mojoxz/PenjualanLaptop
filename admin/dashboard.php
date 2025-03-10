@@ -3,8 +3,8 @@ session_start();
 require_once '../config/koneksi.php';
 
 // Existing PHP code remains the same until the HTML part
-if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../auth/login.php");
+if (!isset($_SESSION['login']) || !isset($_SESSION['role']) || ($_SESSION['role'] != 'admin' && $_SESSION['role'] != 'superadmin')) {
+    header("Location: ../auth/adminlogin.php");
     exit;
 }
 

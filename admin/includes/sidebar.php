@@ -47,9 +47,13 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <hr class="my-3">
 
         <!-- Admin Profile -->
-        <div class="px-3">
-            <div class="small text-muted">Logged in as:</div>
-            <div class="fw-bold"><?= $admin['nama']; ?></div>
-        </div>
-    </div>
+        <div class="small text-muted">Logged in as:</div>
+<div class="fw-bold">
+    <?= $admin['nama']; ?> 
+    <?php if ($admin['role'] == 'superadmin'): ?>
+        <span class="badge bg-danger">Super Admin</span>
+    <?php else: ?>
+        <span class="badge bg-primary">Admin</span>
+    <?php endif; ?>
+</div>
 </nav>

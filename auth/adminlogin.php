@@ -2,64 +2,77 @@
 session_start();
 require_once '../config/koneksi.php';
 
-// Redirect if already logged in as user
-if (isset($_SESSION['login']) && $_SESSION['role'] === 'user') {
-    header("Location: ../user/index.php");
-    exit;
-}
+// Aktifkan pelaporan error (debugging)
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-// Redirect if already logged in as admin
+// Redirect jika sudah login sebagai admin
 if (isset($_SESSION['login']) && ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'superadmin')) {
-    header("Location: ../index.php");
+    header("Location: ../admin/index.php");
     exit;
 }
 
-// Handle success message from register
-if (isset($_SESSION['success'])) {
-    $success_msg = $_SESSION['success'];
-    unset($_SESSION['success']);
-}
-
-// Process user login
+// Proses login
 if (isset($_POST['login'])) {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    // Check user credentials
-    $query = "SELECT * FROM tb_user WHERE nama = '$username'";
+    // Cek kredensial admin tanpa hash
+    $query = "SELECT * FROM tb_admin WHERE username = '$username'";
     $result = mysqli_query($conn, $query);
+
+    // Debugging
+    echo "<!-- Query: $query -->";
+    echo "<!-- Jumlah hasil: " . mysqli_num_rows($result) . " -->";
 
     if (mysqli_num_rows($result) === 1) {
         $row = mysqli_fetch_assoc($result);
-        if (password_verify($password, $row['password'])) {
+        
+        // Debugging
+        echo "<!-- Username DB: " . $row['username'] . " -->";
+        echo "<!-- Password DB: " . $row['password'] . " -->";
+        echo "<!-- Password Input: $password -->";
+        echo "<!-- Role: " . $row['role'] . " -->";
+        
+        // Perbandingan password langsung
+        if ($password === $row['password']) {
             // Set session
             $_SESSION['login'] = true;
-            $_SESSION['user_id'] = $row['user_id'];
-            $_SESSION['username'] = $row['nama'];
-            $_SESSION['role'] = 'user';
+            $_SESSION['admin_id'] = $row['admin_id']; 
+            $_SESSION['username'] = $row['username'];
+            $_SESSION['role'] = $row['role']; // 'admin' atau 'superadmin'
             
-            // Redirect to user page
-            header("Location: ../user/index.php");
+            // Debugging
+            echo "<!-- Login berhasil, mengalihkan ke ../admin/index.php -->";
+            
+            // Redirect ke dashboard admin
+            header("Location: ../admin/index.php");
             exit;
+        } else {
+            // Debugging
+            echo "<!-- Password tidak cocok -->";
         }
+    } else {
+        // Debugging
+        echo "<!-- Username tidak ditemukan -->";
     }
 
-    // Login failed
+    // Login gagal
     $error = true;
 }
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Unesa Laptop</title>
+    <title>Login Admin - Unesa Laptop</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <style>
         body {
-            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), 
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
                         url('../assets/img/hero.jpg') no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
@@ -83,7 +96,7 @@ if (isset($_POST['login'])) {
         }
 
         .card-header {
-            background: linear-gradient(45deg, #0d6efd, #0dcaf0);
+            background: linear-gradient(45deg, #343a40, #495057);
             color: white;
             text-align: center;
             border-radius: 15px 15px 0 0 !important;
@@ -115,8 +128,8 @@ if (isset($_POST['login'])) {
         }
 
         .form-control:focus {
-            border-color: #0d6efd;
-            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+            border-color: #343a40;
+            box-shadow: 0 0 0 0.2rem rgba(52, 58, 64, 0.15);
         }
 
         .input-group-text {
@@ -125,34 +138,26 @@ if (isset($_POST['login'])) {
             color: #6c757d;
         }
 
-        .btn-primary {
+        .btn-dark {
             padding: 12px;
             font-weight: 600;
             border-radius: 10px;
-            background: linear-gradient(45deg, #0d6efd, #0dcaf0);
+            background: linear-gradient(45deg, #343a40, #495057);
             border: none;
             transition: all 0.3s ease;
         }
 
-        .btn-primary:hover {
+        .btn-dark:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+            box-shadow: 0 5px 15px rgba(52, 58, 64, 0.3);
         }
 
         .alert {
             border-radius: 10px;
             border: none;
-            padding: 15px;
-        }
-
-        .alert-danger {
             background-color: #dc3545;
             color: white;
-        }
-
-        .alert-success {
-            background-color: #198754;
-            color: white;
+            padding: 15px;
         }
 
         .divider {
@@ -170,20 +175,18 @@ if (isset($_POST['login'])) {
         }
 
         .back-link:hover {
-            color: #0d6efd;
+            color: #343a40;
             transform: translateX(-5px);
         }
 
-        .register-link {
-            color: #0d6efd;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .register-link:hover {
-            color: #0043a8;
-            text-decoration: underline;
+        .admin-badge {
+            background-color: #343a40;
+            color: white;
+            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 30px;
+            display: inline-block;
+            margin-bottom: 15px;
         }
     </style>
 </head>
@@ -191,21 +194,19 @@ if (isset($_POST['login'])) {
     <div class="login-container">
         <div class="card">
             <div class="card-header">
-                <h4><i class="bi bi-laptop me-2"></i>Unesa Laptop</h4>
+                <h4><i class="bi bi-shield-lock me-2"></i>Panel Admin</h4>
             </div>
             <div class="card-body">
-                <h5 class="text-center mb-4">Login Pengguna</h5>
-
-                <?php if (isset($success_msg)) : ?>
-                    <div class="alert alert-success d-flex align-items-center alert-dismissible fade show" role="alert">
-                        <i class="bi bi-check-circle-fill me-2"></i>
-                        <div><?= $success_msg; ?></div>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                <?php endif; ?>
+                <div class="text-center mb-4">
+                    <span class="admin-badge">
+                        <i class="bi bi-person-badge"></i> Area Admin
+                    </span>
+                    <h5>Login Admin</h5>
+                    <p class="text-muted small">Masukkan kredensial untuk mengakses panel admin</p>
+                </div>
 
                 <?php if (isset($error)) : ?>
-                    <div class="alert alert-danger d-flex align-items-center" role="alert">
+                    <div class="alert d-flex align-items-center" role="alert">
                         <i class="bi bi-exclamation-triangle-fill me-2"></i>
                         <div>Username atau password salah!</div>
                     </div>
@@ -219,7 +220,7 @@ if (isset($_POST['login'])) {
                                 <i class="bi bi-person"></i>
                             </span>
                             <input type="text" class="form-control" id="username" name="username" 
-                                   placeholder="Masukkan username" required>
+                                   placeholder="Masukkan username admin" required>
                         </div>
                     </div>
                     <div class="mb-4">
@@ -235,7 +236,7 @@ if (isset($_POST['login'])) {
                             </span>
                         </div>
                     </div>
-                    <button type="submit" name="login" class="btn btn-primary w-100 mb-4">
+                    <button type="submit" name="login" class="btn btn-dark w-100 mb-4">
                         <i class="bi bi-box-arrow-in-right me-2"></i>Login
                     </button>
                 </form>
@@ -243,9 +244,6 @@ if (isset($_POST['login'])) {
                 <div class="divider"></div>
 
                 <div class="text-center">
-                    <p class="mb-3">Belum punya akun? 
-                        <a href="register.php" class="register-link">Daftar sekarang</a>
-                    </p>
                     <a href="../index.php" class="back-link">
                         <i class="bi bi-arrow-left me-2"></i>
                         Kembali ke Halaman Utama
@@ -254,6 +252,14 @@ if (isset($_POST['login'])) {
             </div>
         </div>
     </div>
+
+    <!-- Tambahkan tombol debug untuk melihat isi session -->
+    <?php if (isset($_GET['debug'])) : ?>
+    <div style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 5px; max-width: 400px; font-size: 12px;">
+        <h5>Debug Session:</h5>
+        <pre><?php print_r($_SESSION); ?></pre>
+    </div>
+    <?php endif; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -271,14 +277,6 @@ if (isset($_POST['login'])) {
                 toggleIcon.classList.add('bi-eye');
             }
         }
-
-        // Auto-hide alerts after 5 seconds
-        setTimeout(function() {
-            document.querySelectorAll('.alert').forEach(function(alert) {
-                const bsAlert = new bootstrap.Alert(alert);
-                bsAlert.close();
-            });
-        }, 5000);
     </script>
 </body>
 </html>

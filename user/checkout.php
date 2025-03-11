@@ -61,16 +61,50 @@ if (isset($_POST['checkout'])) {
             if (tambah('tb_pembelian', $data_pembelian)) {
                 $id_pembelian = mysqli_insert_id($conn);
                 
+                // Ambil admin_id dari database (admin yang aktif)
+                $query_admin = "SELECT admin_id FROM tb_admin WHERE status = 1 LIMIT 1";
+                $result_admin = mysqli_query($conn, $query_admin);
+
+                if (mysqli_num_rows($result_admin) > 0) {
+                    $admin = mysqli_fetch_assoc($result_admin);
+                    $admin_id = $admin['admin_id'];
+                } else {
+                    // Cari admin dengan ID 1 untuk fallback
+                    $query_admin_default = "SELECT admin_id FROM tb_admin WHERE admin_id = 1";
+                    $result_admin_default = mysqli_query($conn, $query_admin_default);
+                    if (mysqli_num_rows($result_admin_default) > 0) {
+                        $admin_id = 1;
+                    } else {
+                        // Ambil admin ID pertama yang tersedia
+                        $query_any_admin = "SELECT admin_id FROM tb_admin LIMIT 1";
+                        $result_any_admin = mysqli_query($conn, $query_any_admin);
+                        if (mysqli_num_rows($result_any_admin) > 0) {
+                            $admin = mysqli_fetch_assoc($result_any_admin);
+                            $admin_id = $admin['admin_id'];
+                        } else {
+                            throw new Exception("Tidak ada admin yang tersedia di sistem!");
+                        }
+                    }
+                }
+                
                 $data_penjualan = [
-                    'admin_id' => 1,
+                    'admin_id' => $admin_id,
                     'tanggal' => date('Y-m-d H:i:s'),
                     'bayar' => $bayar,
                     'total' => $total,
-                    'kembalian' => $kembalian
+                    'kembalian' => $kembalian,
+                    'id_pembelian' => $id_pembelian  // Tambahkan relasi ke tb_pembelian
                 ];
 
                 if (tambah('tb_penjualan', $data_penjualan)) {
                     $penjualan_id = mysqli_insert_id($conn);
+                    
+                    // Update tb_pembelian untuk menambahkan referensi ke tb_penjualan
+                    $update_pembelian = "UPDATE tb_pembelian SET penjualan_id = $penjualan_id WHERE id_pembelian = $id_pembelian";
+                    if (!mysqli_query($conn, $update_pembelian)) {
+                        throw new Exception("Gagal menyimpan referensi pembelian: " . mysqli_error($conn));
+                    }
+                    
                     $all_success = true;
 
                     foreach ($cart_items as $item) {
@@ -110,16 +144,16 @@ if (isset($_POST['checkout'])) {
                     if ($all_success) {
                         mysqli_commit($conn);
                         // Logging untuk debugging
-                        error_log("Pembelian berhasil disimpan dengan ID: $id_pembelian");
+                        error_log("Pembelian berhasil disimpan dengan ID: $id_pembelian, Penjualan ID: $penjualan_id");
                         
                         // Bersihkan keranjang
                         unset($_SESSION['cart']);
                         // Set pesan sukses dengan informasi kembalian
                         $_SESSION['success'] = "Pembelian berhasil! Order ID: #$id_pembelian. Kembalian Anda: Rp " . number_format($kembalian, 0, ',', '.');
                         
-                        // Redirect ke halaman orders
-                        header("Location: orders.php");
-                        exit;
+                        // Redirect ke halaman sukses pembelian
+                        header("Location: purchase_confirmation.php");
+                        exit();
                     } else {
                         throw new Exception("Gagal menyimpan detail transaksi!");
                     }
@@ -141,10 +175,12 @@ if (isset($_POST['checkout'])) {
         }
     }
 }
+
+// HTML dan kode frontend tetap sama seperti sebelumnya
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -576,6 +612,17 @@ tfoot td:last-child {
     font-size: 1.1rem;
     color: var(--primary-color);
 }
+
+/* Shake animation for invalid elements */
+@keyframes shake {
+    0%, 100% {transform: translateX(0);}
+    10%, 30%, 50%, 70%, 90% {transform: translateX(-5px);}
+    20%, 40%, 60%, 80% {transform: translateX(5px);}
+}
+
+.shake-effect {
+    animation: shake 0.5s ease-in-out;
+}
     </style>
 </head>
 <body>
@@ -695,7 +742,7 @@ tfoot td:last-child {
                                 </div>
                             </div>
 
-                            <button type="submit" name="checkout" class="btn btn-primary w-100 mt-3">
+                            <button type="submit" name="checkout" class="btn btn-primary w-100 mt-3" id="btn-checkout">
                                 <i class="bi bi-check-circle me-2"></i>Proses Pembayaran
                             </button>
                         </form>
@@ -707,205 +754,194 @@ tfoot td:last-child {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-    // Inisialisasi kembalian preview saat halaman dimuat
     document.addEventListener('DOMContentLoaded', function() {
-        // Format semua elemen rupiah pada load
+        // Format number to Rupiah
+        function formatRupiah(angka) {
+            var number_string = angka.replace(/[^,\d]/g, '').toString(),
+                split = number_string.split(','),
+                sisa = split[0].length % 3,
+                rupiah = split[0].substr(0, sisa),
+                ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+                
+            if (ribuan) {
+                separator = sisa ? '.' : '';
+                rupiah += separator + ribuan.join('.');
+            }
+            
+            rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+            return rupiah;
+        }
+        
+        // Format all rupiah inputs on page load
         document.querySelectorAll('.rupiah-input').forEach(function(input) {
             let value = input.value.replace(/[^0-9]/g, '');
             if (value) {
                 input.value = formatRupiah(value);
-                // Kalkulasi kembalian jika ada nilai awal
+                // Calculate change if there's an initial value
                 calculateChange(value);
             } else {
-                // Tampilkan kembalian default
+                // Show default change container
                 const kembalianEl = document.getElementById('kembalian-preview');
                 if (kembalianEl) {
                     kembalianEl.style.display = 'block';
                 }
             }
         
-        // Event listener untuk input
-                    input.addEventListener('keyup', function(e) {
-            let value = this.value.replace(/[^0-9]/g, '');
-            this.value = formatRupiah(value);
-            
-            const min = parseInt(this.dataset.min);
-            const current = parseInt(value);
-            
-            if (current < min) {
-                this.classList.add('is-invalid');
-                showValidationFeedback(this, `Minimal pembayaran: Rp ${formatRupiah(min.toString())}`);
-            } else {
-                this.classList.remove('is-invalid');
-                this.classList.add('is-valid');
-                hideValidationFeedback(this);
+            // Event listener for input
+            input.addEventListener('keyup', function(e) {
+                let value = this.value.replace(/[^0-9]/g, '');
+                this.value = formatRupiah(value);
                 
-                // Hapus class is-valid setelah beberapa detik
-                setTimeout(() => {
-                    this.classList.remove('is-valid');
-                }, 2000);
-            }
-            
-            // Kalkulasi dan tampilkan kembalian secara real-time
-            calculateChange(value);
-        });
-    });
-    
-    // Fungsi untuk kalkulasi kembalian secara real-time
-    function calculateChange(inputValue) {
-        const total = document.querySelector('input[name="total"]').value;
-        const bayar = parseInt(inputValue) || 0;
-        const kembalian = bayar - parseInt(total);
-        
-        // Jika div kembalian tidak ada, buat baru
-        let kembalianEl = document.getElementById('kembalian-preview');
-        
-        if (!kembalianEl) {
-            kembalianEl = document.createElement('div');
-            kembalianEl.id = 'kembalian-preview';
-            kembalianEl.className = 'mt-3 p-3 rounded';
-            
-            const form = document.querySelector('form.needs-validation');
-            form.insertBefore(kembalianEl, form.querySelector('button[type="submit"]'));
-        }
-        
-        // Update isi dan styling
-        if (kembalian >= 0) {
-            kembalianEl.className = 'mt-3 p-3 rounded bg-success-subtle';
-            kembalianEl.innerHTML = `
-                <div class="d-flex justify-content-between align-items-center">
-                    <span>Kembalian:</span>
-                    <span class="fw-bold fs-5">Rp ${formatRupiah(kembalian.toString())}</span>
-                </div>
-            `;
-        } else {
-            kembalianEl.className = 'mt-3 p-3 rounded bg-danger-subtle';
-            kembalianEl.innerHTML = `
-                <div class="d-flex justify-content-between align-items-center">
-                    <span>Kurang:</span>
-                    <span class="fw-bold fs-5">Rp ${formatRupiah(Math.abs(kembalian).toString())}</span>
-                </div>
-            `;
-        }
-    }
-    
-    // Tambahkan feedback visual untuk form validation
-    function showValidationFeedback(inputElement, message) {
-        let feedback = inputElement.parentNode.querySelector('.invalid-feedback');
-        
-        if (!feedback) {
-            feedback = document.createElement('div');
-            feedback.className = 'invalid-feedback';
-            inputElement.parentNode.appendChild(feedback);
-        }
-        
-        feedback.textContent = message;
-        feedback.style.display = 'block';
-    }
-    
-    function hideValidationFeedback(inputElement) {
-        const feedback = inputElement.parentNode.querySelector('.invalid-feedback');
-        if (feedback) {
-            feedback.style.display = 'none';
-        }
-    }
-    
-    // Improve select UI
-    document.querySelectorAll('.form-select').forEach(select => {
-        select.addEventListener('change', function() {
-            if (this.value) {
-                this.classList.add('selected');
-            } else {
-                this.classList.remove('selected');
-            }
-        });
-    });
-    
-    // Animasi alert dismiss
-    document.querySelectorAll('.alert .btn-close').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const alert = this.closest('.alert');
-            alert.classList.add('fade-out');
-            setTimeout(() => {
-                alert.remove();
-            }, 300);
-        });
-    });
-    
-    // Form validation
-    const form = document.querySelector('form.needs-validation');
-    if (form) {
-        form.addEventListener('submit', function(event) {
-            if (!this.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
+                const min = parseInt(this.dataset.min);
+                const current = parseInt(value);
                 
-                // Tambah efek shake untuk field yang invalid
-                this.querySelectorAll(':invalid').forEach(field => {
-                    field.classList.add('shake-effect');
+                if (current < min) {
+                    this.classList.add('is-invalid');
+                    showValidationFeedback(this, `Minimal pembayaran: Rp ${formatRupiah(min.toString())}`);
+                } else {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                    hideValidationFeedback(this);
+                    
+                    // Remove is-valid class after some time
                     setTimeout(() => {
-                        field.classList.remove('shake-effect');
-                    }, 500);
-                });
+                        this.classList.remove('is-valid');
+                    }, 2000);
+                }
+                
+                // Calculate and display change in real-time
+                calculateChange(value);
+            });
+        });
+        
+        // Function to calculate change in real-time
+        function calculateChange(inputValue) {
+            const total = document.querySelector('input[name="total"]').value;
+            const bayar = parseInt(inputValue) || 0;
+            const kembalian = bayar - parseInt(total);
+            
+            // Get or create change preview container
+            let kembalianEl = document.getElementById('kembalian-preview');
+            
+            if (!kembalianEl) {
+                kembalianEl = document.createElement('div');
+                kembalianEl.id = 'kembalian-preview';
+                kembalianEl.className = 'mt-3 p-3 rounded';
+                
+                const form = document.querySelector('form.needs-validation');
+                form.insertBefore(kembalianEl, form.querySelector('button[type="submit"]'));
+            }
+            
+            // Update content and styling
+            if (kembalian >= 0) {
+                kembalianEl.className = 'mt-3 p-3 rounded bg-success-subtle';
+                kembalianEl.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Kembalian:</span>
+                        <span class="fw-bold fs-5">Rp ${formatRupiah(kembalian.toString())}</span>
+                    </div>
+                `;
+                kembalianEl.style.display = 'block';
             } else {
-                // Tambahkan animasi pada button submit
-                const submitBtn = this.querySelector('button[type="submit"]');
-                submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Memproses...';
-                submitBtn.classList.add('processing');
-                
-                // Disable button
-                submitBtn.disabled = true;
-                
-                // Tambahkan loading overlay dan highlight success
-                highlightSuccess();
-                
-                // Tambahkan hidden field untuk memastikan form tetap disubmit
-                const hiddenField = document.createElement('input');
-                hiddenField.type = 'hidden';
-                hiddenField.name = 'ensure_submit';
-                hiddenField.value = '1';
-                this.appendChild(hiddenField);
+            } else {
+                kembalianEl.className = 'mt-3 p-3 rounded bg-danger-subtle';
+                kembalianEl.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Kurang:</span>
+                        <span class="fw-bold fs-5">Rp ${formatRupiah(Math.abs(kembalian).toString())}</span>
+                    </div>
+                `;
+                kembalianEl.style.display = 'block';
+            }
+        }
+        
+        // Add visual feedback for form validation
+        function showValidationFeedback(inputElement, message) {
+            let feedback = inputElement.parentNode.querySelector('.invalid-feedback');
+            
+            if (!feedback) {
+                feedback = document.createElement('div');
+                feedback.className = 'invalid-feedback';
+                inputElement.parentNode.appendChild(feedback);
             }
             
-            this.classList.add('was-validated');
-        });
-    }
-    
-    // Enhance user details display
-    const userDetails = document.querySelector('.p-3.bg-light.rounded');
-    if (userDetails) {
-        const paragraphs = userDetails.querySelectorAll('p');
+            feedback.textContent = message;
+            feedback.style.display = 'block';
+        }
         
-        paragraphs.forEach((p, index) => {
-            // Tambahkan icon yang sesuai
-            const strongText = p.querySelector('strong').textContent;
-            
-            let icon = '';
-            if (strongText.includes('Nama')) {
-                icon = '<i class="bi bi-person-circle me-2"></i>';
-            } else if (strongText.includes('Alamat')) {
-                icon = '<i class="bi bi-geo-alt me-2"></i>';
-            } else if (strongText.includes('Telepon')) {
-                icon = '<i class="bi bi-telephone me-2"></i>';
+        function hideValidationFeedback(inputElement) {
+            const feedback = inputElement.parentNode.querySelector('.invalid-feedback');
+            if (feedback) {
+                feedback.style.display = 'none';
             }
-            
-            // Tambahkan icon ke paragraf
-            p.querySelector('strong').innerHTML = icon + p.querySelector('strong').textContent;
-            
-            // Tambahkan animasi delay
-            p.style.opacity = 0;
-            p.style.animation = `fadeIn 0.5s ease forwards ${0.1 + (index * 0.1)}s`;
-        });
-    }
-    
-    // Efek hover pada table rows
-    document.querySelectorAll('.table > tbody tr').forEach(row => {
-        row.addEventListener('mouseenter', function() {
-            this.classList.add('highlight-row');
+        }
+        
+        // Improve select UI
+        document.querySelectorAll('.form-select').forEach(select => {
+            select.addEventListener('change', function() {
+                if (this.value) {
+                    this.classList.add('selected');
+                } else {
+                    this.classList.remove('selected');
+                }
+            });
         });
         
-        row.addEventListener('mouseleave', function() {
-            this.classList.remove('highlight-row');
+        // Animasi alert dismiss
+        document.querySelectorAll('.alert .btn-close').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const alert = this.closest('.alert');
+                alert.classList.add('fade-out');
+                setTimeout(() => {
+                    alert.remove();
+                }, 300);
+            });
         });
+        
+        // Form validation
+        const form = document.querySelector('form.needs-validation');
+        if (form) {
+            form.addEventListener('submit', function(event) {
+                if (!this.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    // Tambah efek shake untuk field yang invalid
+                    this.querySelectorAll(':invalid').forEach(field => {
+                        field.classList.add('shake-effect');
+                        setTimeout(() => {
+                            field.classList.remove('shake-effect');
+                        }, 500);
+                    });
+                } else {
+                    // Verifikasi pembayaran
+                    const bayarInput = document.querySelector('.rupiah-input');
+                    const bayarValue = parseInt(bayarInput.value.replace(/\D/g, '')) || 0;
+                    const minValue = parseInt(bayarInput.dataset.min);
+                    
+                    if (bayarValue < minValue) {
+                        event.preventDefault();
+                        bayarInput.classList.add('is-invalid');
+                        showValidationFeedback(bayarInput, `Minimal pembayaran: Rp ${formatRupiah(minValue.toString())}`);
+                        bayarInput.classList.add('shake-effect');
+                        setTimeout(() => {
+                            bayarInput.classList.remove('shake-effect');
+                        }, 500);
+                        return false;
+                    }
+                    
+                    // Tambahkan animasi pada button submit dan mencegah multiple submit
+                    const submitBtn = document.getElementById('btn-checkout');
+                    if (!submitBtn.disabled) {
+                        submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Memproses Pembayaran...';
+                        submitBtn.disabled = true;
+                    }
+                }
+                
+                this.classList.add('was-validated');
+            });
+        }
     });
-});
+    </script>
+</body>
+</html>

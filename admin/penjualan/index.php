@@ -29,7 +29,7 @@ $query = "SELECT p.*, a.nama as admin_name, u.nama as nama_user, u.telepon, pb.j
           (SELECT SUM(dp.subtotal) FROM tb_detail_penjualan dp WHERE dp.penjualan_id = p.penjualan_id) as total_penjualan 
           FROM tb_penjualan p 
           LEFT JOIN tb_admin a ON p.admin_id = a.admin_id
-          LEFT JOIN tb_pembelian pmb ON p.penjualan_id = pmb.id_pembelian
+          LEFT JOIN tb_pembelian pmb ON p.id_pembelian = pmb.id_pembelian
           LEFT JOIN tb_user u ON pmb.user_id = u.user_id
           LEFT JOIN tb_pembayaran pb ON pmb.pembayaran_id = pb.pembayaran_id
           $where
@@ -46,12 +46,14 @@ $total_produk = query($query_produk)[0]['total'];
 // Query untuk mendapatkan total customer
 $query_customer = "SELECT COUNT(DISTINCT pmb.user_id) as total 
                   FROM tb_pembelian pmb 
-                  JOIN tb_penjualan p ON pmb.id_pembelian = p.penjualan_id 
+                  JOIN tb_penjualan p ON pmb.id_pembelian = p.id_pembelian
                   " . (empty($where) ? "" : str_replace('WHERE', 'WHERE', $where));
 $total_customer = query($query_customer)[0]['total'];
 
 // Memasukkan header
 include_once '../includes/header.php';
+
+// HTML dan kode frontend tetap sama seperti sebelumnya
 ?>
 
 <!-- Custom CSS -->

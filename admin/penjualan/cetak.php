@@ -21,7 +21,7 @@ $query = "SELECT p.*, a.nama as admin_name, u.nama as nama_user, u.alamat, u.tel
           pb.jenis_pembayaran
           FROM tb_penjualan p 
           LEFT JOIN tb_admin a ON p.admin_id = a.admin_id
-          LEFT JOIN tb_pembelian pmb ON p.penjualan_id = pmb.id_pembelian
+          LEFT JOIN tb_pembelian pmb ON p.id_pembelian = pmb.id_pembelian
           LEFT JOIN tb_user u ON pmb.user_id = u.user_id
           LEFT JOIN tb_pembayaran pb ON pmb.pembayaran_id = pb.pembayaran_id
           WHERE p.penjualan_id = $penjualan_id";
@@ -34,6 +34,8 @@ $detail_query = "SELECT dp.*, b.nama_barang, b.harga_jual, m.nama_merk
                 LEFT JOIN tb_merk m ON b.merk_id = m.merk_id 
                 WHERE dp.penjualan_id = $penjualan_id";
 $details = query($detail_query);
+
+// HTML dan kode frontend tetap sama seperti sebelumnya
 ?>
 <!DOCTYPE html>
 <html lang="en">

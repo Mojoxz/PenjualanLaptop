@@ -21,7 +21,7 @@ $query = "SELECT p.*, a.nama as admin_name, u.nama as nama_user, u.alamat, u.tel
           pb.jenis_pembayaran, GROUP_CONCAT(DISTINCT b.nama_barang SEPARATOR ', ') as produk_dibeli
           FROM tb_penjualan p 
           LEFT JOIN tb_admin a ON p.admin_id = a.admin_id
-          LEFT JOIN tb_pembelian pmb ON p.penjualan_id = pmb.id_pembelian
+          LEFT JOIN tb_pembelian pmb ON p.id_pembelian = pmb.id_pembelian
           LEFT JOIN tb_user u ON pmb.user_id = u.user_id
           LEFT JOIN tb_pembayaran pb ON pmb.pembayaran_id = pb.pembayaran_id
           LEFT JOIN tb_detail_penjualan dp ON p.penjualan_id = dp.penjualan_id
@@ -41,6 +41,8 @@ $detail_query = "SELECT dp.*, b.nama_barang, b.harga_jual, b.gambar,
 $details = query($detail_query);
 
 include_once '../includes/header.php';
+
+// HTML dan kode frontend tetap sama seperti sebelumnya
 ?>
 
 <!-- Custom CSS -->

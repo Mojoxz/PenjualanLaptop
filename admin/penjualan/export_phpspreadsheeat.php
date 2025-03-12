@@ -43,12 +43,23 @@ $allowed_columns = ['p.tanggal', 'p.penjualan_id', 'u.nama', 'u.telepon', 'pb.je
 $sort_column = in_array($sort_column, $allowed_columns) ? $sort_column : 'p.tanggal';
 $sort_order = in_array(strtoupper($sort_order), ['ASC', 'DESC']) ? strtoupper($sort_order) : 'DESC';
 
-// Ambil data penjualan
-$query = "SELECT p.*, a.nama as admin_name, u.nama as nama_user, u.telepon, pb.jenis_pembayaran,
-          (SELECT SUM(dp.subtotal) FROM tb_detail_penjualan dp WHERE dp.penjualan_id = p.penjualan_id) as total_penjualan 
+// Cek apakah semua penjualan memiliki id_pembelian
+$query_check = "SELECT COUNT(*) as count FROM tb_penjualan WHERE id_pembelian IS NULL";
+$has_null_pembelian = query($query_check)[0]['count'] > 0;
+
+// Ambil data penjualan dengan JOIN yang benar, mengatasi masalah missing user
+// Pendekatan ini menggunakan LEFT JOIN untuk memastikan semua penjualan ditampilkan
+// bahkan jika tidak ada user yang terkait
+$query = "SELECT p.*, 
+          a.nama as admin_name, 
+          u.nama as nama_user, 
+          u.telepon, 
+          u.user_id,
+          pb.jenis_pembayaran,
+          (SELECT SUM(dp.subtotal) FROM tb_detail_penjualan dp WHERE dp.penjualan_id = p.penjualan_id) as total_penjualan
           FROM tb_penjualan p 
           LEFT JOIN tb_admin a ON p.admin_id = a.admin_id
-          LEFT JOIN tb_pembelian pmb ON p.penjualan_id = pmb.id_pembelian
+          LEFT JOIN tb_pembelian pmb ON p.id_pembelian = pmb.id_pembelian
           LEFT JOIN tb_user u ON pmb.user_id = u.user_id
           LEFT JOIN tb_pembayaran pb ON pmb.pembayaran_id = pb.pembayaran_id
           $where
@@ -56,7 +67,10 @@ $query = "SELECT p.*, a.nama as admin_name, u.nama as nama_user, u.telepon, pb.j
 $penjualan = query($query);
 
 // Hitung total untuk ringkasan
-$total_pendapatan = array_sum(array_column($penjualan, 'total'));
+$total_pendapatan = 0;
+foreach ($penjualan as $data) {
+    $total_pendapatan += ($data['total_penjualan'] ?? $data['total'] ?? 0);
+}
 
 // Query untuk mendapatkan total produk terjual
 $query_produk = "SELECT COALESCE(SUM(dp.jumlah), 0) as total 
@@ -68,7 +82,7 @@ $total_produk = query($query_produk)[0]['total'];
 // Query untuk mendapatkan total customer
 $query_customer = "SELECT COUNT(DISTINCT pmb.user_id) as total 
                   FROM tb_pembelian pmb 
-                  JOIN tb_penjualan p ON pmb.id_pembelian = p.penjualan_id 
+                  JOIN tb_penjualan p ON pmb.id_pembelian = p.id_pembelian 
                   " . (empty($where) ? "" : $where);
 $total_customer = query($query_customer)[0]['total'];
 
@@ -123,6 +137,13 @@ $sheet->setCellValue('B6', ': ' . $total_produk);
 $sheet->setCellValue('A7', 'Total Customer');
 $sheet->setCellValue('B7', ': ' . $total_customer);
 
+// Tampilkan informasi jika ada penjualan tanpa user
+if ($has_null_pembelian) {
+    $sheet->setCellValue('A8', 'Catatan');
+    $sheet->setCellValue('B8', ': Beberapa penjualan mungkin merupakan transaksi langsung tanpa akun pengguna.');
+    $sheet->getStyle('A8')->applyFromArray($styleRingkasan);
+}
+
 // Style ringkasan
 $styleRingkasan = [
     'font' => [
@@ -175,13 +196,25 @@ foreach ($penjualan as $data) {
     $sheet->setCellValue('A' . $row, $no++);
     $sheet->setCellValue('B' . $row, date('d/m/Y H:i', strtotime($data['tanggal'])));
     $sheet->setCellValue('C' . $row, $data['penjualan_id']);
-    $sheet->setCellValue('D' . $row, $data['nama_user'] ?? 'User tidak ditemukan');
-    $sheet->setCellValue('E' . $row, $data['telepon'] ?? '-');
-    $sheet->setCellValue('F' . $row, $data['jenis_pembayaran'] ?? '-');
-    $sheet->setCellValue('G' . $row, $data['total']);
-    $sheet->setCellValue('H' . $row, $data['bayar']);
-    $sheet->setCellValue('I' . $row, $data['kembalian']);
-    $sheet->setCellValue('J' . $row, $data['admin_name']);
+    
+    // Tampilkan "Penjualan Langsung" atau "Customer Walk-in" untuk user yang tidak ditemukan
+    // sebagai alternatif label yang lebih deskriptif
+    if (empty($data['nama_user']) || $data['nama_user'] === null) {
+        $sheet->setCellValue('D' . $row, 'Penjualan Langsung');
+        $sheet->setCellValue('E' . $row, '-');
+    } else {
+        $sheet->setCellValue('D' . $row, $data['nama_user']);
+        $sheet->setCellValue('E' . $row, $data['telepon'] ?? '-');
+    }
+    
+    $sheet->setCellValue('F' . $row, $data['jenis_pembayaran'] ?? 'Tunai');
+    
+    // Gunakan total_penjualan jika tersedia, jika tidak gunakan total dari tabel penjualan
+    $total_sale = $data['total_penjualan'] ?? $data['total'] ?? 0;
+    $sheet->setCellValue('G' . $row, $total_sale);
+    $sheet->setCellValue('H' . $row, $data['bayar'] ?? 0);
+    $sheet->setCellValue('I' . $row, $data['kembalian'] ?? 0);
+    $sheet->setCellValue('J' . $row, $data['admin_name'] ?? '-');
     
     // Format angka untuk nilai rupiah
     $sheet->getStyle('G' . $row)->getNumberFormat()->setFormatCode('#,##0');
@@ -192,7 +225,7 @@ foreach ($penjualan as $data) {
     $sheet->getStyle('A' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
     $sheet->getStyle('G' . $row . ':I' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
     
-    $grand_total += $data['total'];
+    $grand_total += $total_sale;
     $row++;
 }
 

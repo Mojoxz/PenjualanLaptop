@@ -20,13 +20,14 @@ $total_user = query("SELECT COUNT(*) as total FROM tb_user")[0]['total'];
 $total_admin = query("SELECT COUNT(*) as total FROM tb_admin")[0]['total'];
 
 // Query penjualan terbaru dengan info user
+// FIX: Changed JOIN condition from p.penjualan_id = pmb.id_pembelian to p.id_pembelian = pmb.id_pembelian
 $recent_sales = query("SELECT p.*, a.nama as admin_name, u.nama as nama_user, u.telepon,
                       pb.jenis_pembayaran, SUM(dp.subtotal) as total,
                       GROUP_CONCAT(b.nama_barang SEPARATOR ', ') as produk_dibeli,
                       COUNT(dp.barang_id) as jumlah_item 
                       FROM tb_penjualan p 
                       LEFT JOIN tb_admin a ON p.admin_id = a.admin_id
-                      LEFT JOIN tb_pembelian pmb ON p.penjualan_id = pmb.id_pembelian
+                      LEFT JOIN tb_pembelian pmb ON p.id_pembelian = pmb.id_pembelian
                       LEFT JOIN tb_user u ON pmb.user_id = u.user_id
                       LEFT JOIN tb_pembayaran pb ON pmb.pembayaran_id = pb.pembayaran_id
                       LEFT JOIN tb_detail_penjualan dp ON p.penjualan_id = dp.penjualan_id
@@ -270,6 +271,18 @@ body {
 
 .table tbody tr:hover {
     background-color: #f8fafc;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.table tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 0.5rem;
+}
+
+.table tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 0.5rem;
 }
 
 /* Badge Styles */
@@ -643,17 +656,6 @@ main p.text-muted {
                                                 <td>
                                                     <div>
                                                         <div class="fw-bold"><?= htmlspecialchars($sale['nama_user'] ?? 'User tidak ditemukan') ?></div>
-                                                        <small class="text-muted">
-                                                            <i class="bi bi-telephone me-1"></i>
-                                                            <?= htmlspecialchars($sale['telepon'] ?? '-') ?>
-                                                        </small>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div>
-                                                        <div class="text-truncate" style="max-width: 200px;">
-                                                            <?= htmlspecialchars($sale['produk_dibeli']) ?>
-                                                        </div>
                                                         <small class="text-muted">
                                                             <i class="bi bi-box me-1"></i>
                                                             <?= $sale['jumlah_item'] ?> item

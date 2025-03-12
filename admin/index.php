@@ -473,6 +473,12 @@ main p.text-muted {
                                 Manajemen Admin
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="custom_orders/index.php">
+                                <i class="bi bi-tools"></i>
+                                Custom Order
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </nav>

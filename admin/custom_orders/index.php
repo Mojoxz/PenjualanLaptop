@@ -1,8 +1,6 @@
 <?php
 session_start();
 require_once '../../config/koneksi.php';
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
 // Cek login
 if (!isset($_SESSION['login']) || !isset($_SESSION['role']) || ($_SESSION['role'] != 'admin' && $_SESSION['role'] != 'superadmin')) {
@@ -24,14 +22,7 @@ $query = "SELECT co.*, u.nama as user_name, u.telepon as user_phone
           JOIN tb_user u ON co.user_id = u.user_id 
           $status_filter
           ORDER BY co.created_at DESC";
-$custom_orders_result = mysqli_query($conn, $query);
-$custom_orders = [];
-
-if ($custom_orders_result && mysqli_num_rows($custom_orders_result) > 0) {
-    while ($row = mysqli_fetch_assoc($custom_orders_result)) {
-        $custom_orders[] = $row;
-    }
-}
+$custom_orders = query($query);
 
 // Hitung jumlah order berdasarkan status
 $count_pending = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM tb_custom_orders WHERE status = 'pending'"))['total'];
@@ -624,6 +615,7 @@ include_once '../includes/header.php';
 }
 </style>
 
+
 <div class="container-fluid px-4">
     <div class="page-header">
         <h1 class="mb-2 fw-bold">Custom Orders</h1>
@@ -758,6 +750,9 @@ include_once '../includes/header.php';
         <a href="index.php?status=cancelled" class="filter-btn filter-btn-cancelled <?= (isset($_GET['status']) && $_GET['status'] == 'cancelled') ? 'active' : '' ?>">
             <i class="bi bi-x-circle"></i> Dibatalkan
         </a>
+        <a href="export_customs_orders.php" class="btn btn-success">
+    <i class="bi bi-file-excel me-1"></i> Export Data
+</a>
     </div>
 
     <!-- Custom Orders Table -->
@@ -879,417 +874,56 @@ include_once '../includes/header.php';
 </div>
 
 <script>
+// Animasi statistik
 document.addEventListener('DOMContentLoaded', function() {
-    // Animasi untuk Cards Statistik
-    const animateStatsCards = () => {
-        const statsCards = document.querySelectorAll('.stats-card');
-        
-        statsCards.forEach((card, index) => {
-            // Set initial state (invisible and translated down)
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(30px)';
-            card.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
-            
-            // Animate with staggered delay
-            setTimeout(() => {
-                card.style.opacity = '1';
-                card.style.transform = 'translateY(0)';
-            }, 100 + (index * 100));
-            
-            // Add hover effect
-            card.addEventListener('mouseenter', () => {
-                card.style.transform = 'translateY(-10px)';
-                card.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
-                
-                // Also animate the icon inside
-                const icon = card.querySelector('.stats-icon');
-                if (icon) {
-                    icon.style.transform = 'scale(1.2) rotate(5deg)';
-                }
-            });
-            
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = 'translateY(0)';
-                card.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
-                
-                // Reset icon animation
-                const icon = card.querySelector('.stats-icon');
-                if (icon) {
-                    icon.style.transform = 'scale(1) rotate(0)';
-                }
-            });
-        });
-    };
-
-    // Animasi untuk Tabel Data
-    const animateTableRows = () => {
-        const tableRows = document.querySelectorAll('.custom-table tbody tr');
-        
-        tableRows.forEach((row, index) => {
-            // Set initial state
-            row.style.opacity = '0';
-            row.style.transform = 'translateX(-10px)';
-            row.style.transition = 'all 0.3s ease-out';
-            
-            // Animate with staggered delay
-            setTimeout(() => {
-                row.style.opacity = '1';
-                row.style.transform = 'translateX(0)';
-            }, 300 + (index * 50)); // Slightly faster than cards
-            
-            // Add hover effect
-            row.addEventListener('mouseenter', () => {
-                row.style.backgroundColor = 'rgba(79, 70, 229, 0.05)';
-                row.style.transform = 'translateX(5px)';
-                
-                // Highlight action buttons
-                const actionBtns = row.querySelectorAll('.btn-action');
-                actionBtns.forEach(btn => {
-                    btn.style.transform = 'translateY(-3px)';
-                    btn.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
-                });
-                
-                // Highlight spec badges
-                const badges = row.querySelectorAll('.spec-badge');
-                badges.forEach(badge => {
-                    badge.style.backgroundColor = 'rgba(79, 70, 229, 0.1)';
-                });
-            });
-            
-            row.addEventListener('mouseleave', () => {
-                row.style.backgroundColor = '';
-                row.style.transform = 'translateX(0)';
-                
-                // Reset action buttons
-                const actionBtns = row.querySelectorAll('.btn-action');
-                actionBtns.forEach(btn => {
-                    btn.style.transform = '';
-                    btn.style.boxShadow = '';
-                });
-                
-                // Reset spec badges
-                const badges = row.querySelectorAll('.spec-badge');
-                badges.forEach(badge => {
-                    badge.style.backgroundColor = '';
-                });
-            });
-        });
-    };
-
-    // Efek klik untuk Filter Buttons
-    const setupFilterButtons = () => {
-        const filterButtons = document.querySelectorAll('.filter-btn');
-        
-        filterButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                // Add click effect
-                btn.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    btn.style.transform = '';
-                }, 150);
-                
-                // Tambahkan efek "Loading"
-                const originalContent = btn.innerHTML;
-                
-                // Hanya tambahkan loading jika button tidak active
-                if (!btn.classList.contains('active')) {
-                    btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
-                    
-                    // Reset setelah navigasi (tetapi biarkan navigasi terjadi dulu)
-                    setTimeout(() => {
-                        btn.innerHTML = originalContent;
-                    }, 300);
-                }
-            });
-        });
-    };
-
-    // Implementasi fitur pencarian cepat di tabel
-    const setupQuickSearch = () => {
-        // Tambahkan search box sebelum tabel
-        const tableCard = document.querySelector('.table-card');
-        const tableHeader = tableCard.querySelector('.card-header');
-        
-        const searchDiv = document.createElement('div');
-        searchDiv.className = 'mt-3';
-        searchDiv.innerHTML = `
-            <div class="input-group">
-                <span class="input-group-text bg-light border-0">
-                    <i class="bi bi-search"></i>
-                </span>
-                <input type="text" id="orderSearchInput" class="form-control border-0 bg-light" 
-                       placeholder="Cari custom order..." style="border-radius: 8px;">
-            </div>
-        `;
-        
-        tableHeader.appendChild(searchDiv);
-        
-        // Implementasi fungsi pencarian
-        const searchInput = document.getElementById('orderSearchInput');
-        
-        searchInput.addEventListener('keyup', () => {
-            const searchTerm = searchInput.value.toLowerCase();
-            const tableRows = document.querySelectorAll('.custom-table tbody tr');
-            
-            tableRows.forEach(row => {
-                const textContent = row.textContent.toLowerCase();
-                
-                if (textContent.includes(searchTerm)) {
-                    row.style.display = '';
-                    // Highlight the search term
-                    highlightSearchTerm(row, searchTerm);
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-            
-            // Show empty state if no results
-            const visibleRows = document.querySelectorAll('.custom-table tbody tr[style=""]').length;
-            const tbody = document.querySelector('.custom-table tbody');
-            
-            if (visibleRows === 0 && searchTerm !== '') {
-                // Check if we already have a no-results row
-                let noResultsRow = document.getElementById('no-search-results');
-                
-                if (!noResultsRow) {
-                    noResultsRow = document.createElement('tr');
-                    noResultsRow.id = 'no-search-results';
-                    noResultsRow.innerHTML = `
-                        <td colspan="7" class="text-center py-4">
-                            <i class="bi bi-search fs-1 d-block mb-2 text-muted"></i>
-                            <span class="text-muted">Tidak ada hasil untuk pencarian "<strong>${searchTerm}</strong>"</span>
-                        </td>
-                    `;
-                    tbody.appendChild(noResultsRow);
-                } else {
-                    noResultsRow.querySelector('strong').textContent = searchTerm;
-                    noResultsRow.style.display = '';
-                }
-            } else {
-                const noResultsRow = document.getElementById('no-search-results');
-                if (noResultsRow) {
-                    noResultsRow.style.display = 'none';
-                }
+    // Function untuk animasi penghitungan
+    const animateValue = (element, start, end, duration) => {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            const value = Math.floor(progress * (end - start) + start);
+            element.innerHTML = value.toLocaleString();
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
             }
-        });
-    };
-    
-    // Helper function untuk highlight search term
-    const highlightSearchTerm = (row, term) => {
-        if (term === '') return;
-        
-        // Reset any existing highlights first
-        const existingHighlights = row.querySelectorAll('span.search-highlight');
-        existingHighlights.forEach(el => {
-            el.outerHTML = el.innerHTML;
-        });
-        
-        // Only highlight text content, not in attributes
-        const textNodes = [];
-        const walk = document.createTreeWalker(row, NodeFilter.SHOW_TEXT, null, false);
-        
-        let node;
-        while(node = walk.nextNode()) {
-            if (node.nodeValue.trim() !== '') {
-                textNodes.push(node);
-            }
-        }
-        
-        textNodes.forEach(textNode => {
-            const content = textNode.nodeValue;
-            const lowerContent = content.toLowerCase();
-            const index = lowerContent.indexOf(term);
-            
-            if (index >= 0) {
-                const spanNode = document.createElement('span');
-                spanNode.className = 'search-highlight';
-                spanNode.style.backgroundColor = 'rgba(79, 70, 229, 0.2)';
-                spanNode.style.borderRadius = '2px';
-                spanNode.style.padding = '0 2px';
-                
-                const before = document.createTextNode(content.substring(0, index));
-                const match = document.createTextNode(content.substring(index, index + term.length));
-                const after = document.createTextNode(content.substring(index + term.length));
-                
-                spanNode.appendChild(match);
-                
-                const fragment = document.createDocumentFragment();
-                fragment.appendChild(before);
-                fragment.appendChild(spanNode);
-                fragment.appendChild(after);
-                
-                textNode.parentNode.replaceChild(fragment, textNode);
-            }
-        });
+        };
+        window.requestAnimationFrame(step);
     };
 
-    // Efek loading pada tombol refresh
-    const setupRefreshButton = () => {
-        const refreshBtn = document.querySelector('.card-header .btn');
-        
-        if (refreshBtn) {
-            refreshBtn.addEventListener('click', () => {
-                const icon = refreshBtn.querySelector('.bi-arrow-clockwise');
-                
-                // Add rotation animation
-                icon.style.transition = 'transform 1s';
-                icon.style.transform = 'rotate(360deg)';
-                
-                // Change button text
-                refreshBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Memuat...';
-                
-                // Simulate reload delay
-                setTimeout(() => {
-                    window.location.reload();
-                }, 500);
-            });
+    // Animasi untuk stat-value
+    document.querySelectorAll('.stats-value').forEach(element => {
+        const value = parseInt(element.innerText.replace(/\D/g, ''));
+        if (!isNaN(value)) {
+            element.innerText = '0';
+            animateValue(element, 0, value, 1000);
         }
-    };
-    
-    // Alert toast handler
-    const setupAlertToasts = () => {
-        // Create toast container if doesn't exist
-        let toastContainer = document.querySelector('.toast-container');
-        
-        if (!toastContainer) {
-            toastContainer = document.createElement('div');
-            toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
-            document.body.appendChild(toastContainer);
+    });
+
+    // Cek apakah DataTables tersedia dan aktifkan jika ada
+    if (typeof document.querySelector('#dataTable') !== 'undefined') {
+        // Coba gunakan vanilla JS untuk tabel (karena jQuery mungkin tidak tersedia)
+        const table = document.querySelector('#dataTable');
+        if (table) {
+            // Tambahkan kelas untuk styling dasar
+            table.classList.add('display', 'table-striped');
         }
-        
-        // Convert existing alerts to toasts
+    }
+
+    // Otomatis tutup alert setelah 5 detik
+    setTimeout(function() {
         const alerts = document.querySelectorAll('.alert');
-        
-        alerts.forEach((alert, index) => {
-            // Get alert content
-            const content = alert.innerHTML;
-            const isSuccess = alert.classList.contains('alert-success');
-            const isDanger = alert.classList.contains('alert-danger');
-            
-            // Create toast element
-            const toast = document.createElement('div');
-            toast.className = `toast align-items-center ${isSuccess ? 'bg-success' : ''} ${isDanger ? 'bg-danger' : ''} text-white border-0`;
-            toast.setAttribute('role', 'alert');
-            toast.setAttribute('aria-live', 'assertive');
-            toast.setAttribute('aria-atomic', 'true');
-            toast.style.opacity = '0';
-            toast.style.transform = 'translateY(20px)';
-            toast.style.transition = 'all 0.3s ease';
-            
-            toast.innerHTML = `
-                <div class="d-flex">
-                    <div class="toast-body">
-                        ${content}
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-            `;
-            
-            // Add to container
-            toastContainer.appendChild(toast);
-            
-            // Show with delay
-            setTimeout(() => {
-                toast.style.opacity = '1';
-                toast.style.transform = 'translateY(0)';
-                
-                const bsToast = new bootstrap.Toast(toast, {
-                    autohide: true,
-                    delay: 5000
-                });
-                
-                bsToast.show();
-                
-                // Remove original alert
+        alerts.forEach(alert => {
+            // Menggunakan vanilla JS untuk menutup alert
+            const closeButton = alert.querySelector('.btn-close');
+            if (closeButton) {
+                closeButton.click();
+            } else {
+                // Jika tidak ada tombol close, sembunyikan alert
                 alert.style.display = 'none';
-            }, 300 + (index * 100));
-        });
-    };
-    
-    // Animasi untuk nilai statistik
-    const animateStatValues = () => {
-        const statValues = document.querySelectorAll('.stats-value');
-        
-        statValues.forEach(element => {
-            const finalValue = parseInt(element.innerText.replace(/\D/g, ''));
-            
-            if (!isNaN(finalValue)) {
-                // Start from 0
-                element.innerText = '0';
-                
-                // Animate to final value
-                let startValue = 0;
-                const duration = 1500; // ms
-                const incrementInterval = 20; // ms
-                const totalIncrements = duration / incrementInterval;
-                const incrementAmount = finalValue / totalIncrements;
-                
-                const intervalId = setInterval(() => {
-                    startValue += incrementAmount;
-                    
-                    if (startValue >= finalValue) {
-                        element.innerText = finalValue;
-                        clearInterval(intervalId);
-                    } else {
-                        element.innerText = Math.floor(startValue);
-                    }
-                }, incrementInterval);
             }
         });
-    };
-    
-    // Tambahkan efek pulsing badge
-    const animateStatusBadges = () => {
-        const statusBadges = document.querySelectorAll('.badge');
-        
-        statusBadges.forEach(badge => {
-            // Tambahkan pulsing effect hanya untuk status Pending
-            if (badge.classList.contains('bg-warning')) {
-                badge.style.animation = 'pulse 2s infinite';
-            }
-        });
-    };
-    
-    // Tambahkan CSS untuk efek pulse
-    const addPulseAnimation = () => {
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes pulse {
-                0% {
-                    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
-                }
-                70% {
-                    box-shadow: 0 0 0 10px rgba(245, 158, 11, 0);
-                }
-                100% {
-                    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
-                }
-            }
-        `;
-        document.head.appendChild(style);
-    };
-    
-    // Eksekusi semua fungsi
-    const initializeInteractiveElements = () => {
-        // Add pulse animation CSS
-        addPulseAnimation();
-        
-        // Execute animations and interactions
-        animateStatsCards();
-        animateTableRows();
-        setupFilterButtons();
-        setupQuickSearch();
-        setupRefreshButton();
-        setupAlertToasts();
-        animateStatValues();
-        animateStatusBadges();
-        
-        // Log initialization complete
-        console.log('Interactive elements initialized');
-    };
-    
-    // Start initialization
-    initializeInteractiveElements();
+    }, 5000);
 });
 </script>
 

@@ -589,9 +589,6 @@ include_once '../includes/header.php';
                         <i class="bi bi-file-excel me-1"></i> Export Excel
                     </button>
                     <!-- Tambahan tombol untuk PhpSpreadsheet jika sudah diinstal -->
-                    <button type="button" class="btn btn-info" onclick="exportExcelAdvanced()">
-                        <i class="bi bi-file-excel me-1"></i> Excel Format Baik
-                    </button>
                 </div>
             </div>
         </form>

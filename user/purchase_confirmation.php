@@ -10,7 +10,7 @@ if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'user') {
 
 // Cek data pembelian
 if (!isset($_SESSION['purchase_complete'])) {
-    header("Location: index.php");
+    header("Location: orders.php");
     exit;
 }
 

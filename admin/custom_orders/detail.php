@@ -448,7 +448,6 @@ include_once '../includes/header.php';
 }
 </style>
 
-
 <div class="container-fluid px-4">
     <div class="page-header">
         <h1 class="mb-2 fw-bold">Detail Custom Order</h1>
@@ -821,187 +820,52 @@ include_once '../includes/header.php';
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Card entrance animations
-    const animateCards = () => {
-        const cards = document.querySelectorAll('.card');
-        
-        cards.forEach((card, index) => {
-            // Set initial state
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(20px)';
-            card.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+    // Handle modal status selection
+    const updateStatusModal = document.getElementById('updateStatusModal');
+    if (updateStatusModal) {
+        updateStatusModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const status = button.getAttribute('data-status');
             
-            // Animate with staggered delay
-            setTimeout(() => {
-                card.style.opacity = '1';
-                card.style.transform = 'translateY(0)';
-            }, 100 + (index * 100));
+            // Set the status value in the hidden input
+            document.getElementById('new_status').value = status;
             
-            // Add hover effects
-            card.addEventListener('mouseenter', () => {
-                card.style.transform = 'translateY(-5px)';
-                card.style.boxShadow = '0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -6px rgba(0,0,0,0.1)';
+            // Show the appropriate status message
+            document.querySelectorAll('[id^="status_message_"]').forEach(function(el) {
+                el.classList.add('d-none');
             });
             
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = 'translateY(0)';
-                card.style.boxShadow = '0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)';
-            });
-        });
-    };
-
-    // Status badge animations
-    const animateStatusBadges = () => {
-        const badges = document.querySelectorAll('.badge');
-        
-        badges.forEach(badge => {
-            if (badge.classList.contains('bg-warning')) {
-                badge.style.animation = 'pulse 2s infinite';
+            const statusMessage = document.getElementById('status_message_' + status);
+            if (statusMessage) {
+                statusMessage.classList.remove('d-none');
             }
             
-            badge.style.transition = 'all 0.3s ease';
-            
-            badge.addEventListener('mouseenter', () => {
-                badge.style.transform = 'translateY(-3px) scale(1.05)';
-                badge.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1)';
-            });
-            
-            badge.addEventListener('mouseleave', () => {
-                badge.style.transform = 'translateY(0) scale(1)';
-                badge.style.boxShadow = 'none';
-            });
-        });
-    };
-
-    // Button animations
-    const animateButtons = () => {
-        const buttons = document.querySelectorAll('.btn');
-        
-        buttons.forEach(btn => {
-            btn.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-            
-            btn.addEventListener('mouseenter', () => {
-                btn.style.transform = 'translateY(-3px)';
-                
-                if (btn.classList.contains('btn-primary')) {
-                    btn.style.boxShadow = '0 4px 6px -1px rgba(37, 99, 235, 0.5), 0 2px 4px -2px rgba(37, 99, 235, 0.5)';
-                } else if (btn.classList.contains('btn-success')) {
-                    btn.style.boxShadow = '0 4px 6px -1px rgba(16, 185, 129, 0.5), 0 2px 4px -2px rgba(16, 185, 129, 0.5)';
-                } else if (btn.classList.contains('btn-info')) {
-                    btn.style.boxShadow = '0 4px 6px -1px rgba(59, 130, 246, 0.5), 0 2px 4px -2px rgba(59, 130, 246, 0.5)';
-                } else if (btn.classList.contains('btn-danger')) {
-                    btn.style.boxShadow = '0 4px 6px -1px rgba(239, 68, 68, 0.5), 0 2px 4px -2px rgba(239, 68, 68, 0.5)';
-                } else {
-                    btn.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1)';
-                }
-            });
-            
-            btn.addEventListener('mouseleave', () => {
-                btn.style.transform = 'translateY(0)';
-                btn.style.boxShadow = 'none';
-            });
-        });
-    };
-    
-    // Animate order header
-    const animateOrderHeader = () => {
-        const orderHeader = document.querySelector('.card.mb-4');
-        if (orderHeader) {
-            orderHeader.classList.add('order-header-card');
-            
-            orderHeader.style.position = 'relative';
-            orderHeader.style.overflow = 'hidden';
-            
-            const beforeElement = document.createElement('div');
-            beforeElement.style.position = 'absolute';
-            beforeElement.style.top = '0';
-            beforeElement.style.right = '0';
-            beforeElement.style.width = '150px';
-            beforeElement.style.height = '150px';
-            beforeElement.style.background = 'linear-gradient(135deg, rgba(79, 70, 229, 0.05) 0%, rgba(79, 70, 229, 0) 50%)';
-            beforeElement.style.borderRadius = '0 0 0 100%';
-            beforeElement.style.zIndex = '0';
-            
-            orderHeader.appendChild(beforeElement);
-        }
-    };
-    
-    // Enhanced spec items
-    const enhanceSpecItems = () => {
-        const specItems = document.querySelectorAll('.d-flex.align-items-center.mb-3');
-        
-        specItems.forEach(item => {
-            item.classList.add('spec-item');
-            const icon = item.querySelector('.d-flex.align-items-center.justify-content-center');
-            
-            if (icon) {
-                icon.classList.add('spec-icon');
+            // Update modal title based on status
+            const modalTitle = document.getElementById('updateStatusModalLabel');
+            if (status === 'processing') {
+                modalTitle.textContent = 'Proses Custom Order';
+            } else if (status === 'completed') {
+                modalTitle.textContent = 'Selesaikan Custom Order';
+            } else if (status === 'cancelled') {
+                modalTitle.textContent = 'Batalkan Custom Order';
+            } else {
+                modalTitle.textContent = 'Update Status Order';
             }
-            
-            item.addEventListener('mouseenter', () => {
-                if (icon) {
-                    icon.style.transform = 'scale(1.1) rotate(5deg)';
-                    icon.style.backgroundColor = 'rgba(79, 70, 229, 0.1)';
-                }
-                
-                item.style.transform = 'translateX(5px)';
-            });
-            
-            item.addEventListener('mouseleave', () => {
-                if (icon) {
-                    icon.style.transform = '';
-                    icon.style.backgroundColor = '';
-                }
-                
-                item.style.transform = '';
-            });
         });
-    };
-    
-    // Timeline dots enhancement
-    const enhanceTimelineDots = () => {
-        const timelineDots = document.querySelectorAll('.position-absolute.top-0.start-0.rounded-circle');
-        
-        timelineDots.forEach(dot => {
-            dot.classList.add('timeline-dot');
-            
-            dot.style.transition = 'all 0.3s ease';
-            
-            dot.addEventListener('mouseenter', () => {
-                dot.style.transform = 'scale(1.2)';
-                dot.style.boxShadow = '0 0 0 5px rgba(79, 70, 229, 0.1)';
-            });
-            
-            dot.addEventListener('mouseleave', () => {
-                dot.style.transform = '';
-                dot.style.boxShadow = '';
-            });
+    }
+
+    // Auto dismiss alerts after 5 seconds
+    setTimeout(function() {
+        const alerts = document.querySelectorAll('.alert:not([id^="status_message_"])');
+        alerts.forEach(function(alert) {
+            const closeButton = alert.querySelector('.btn-close');
+            if (closeButton) {
+                closeButton.click();
+            } else {
+                alert.style.display = 'none';
+            }
         });
-    };
-    
-    // Auto dismiss alerts
-    const setupAutoDismissAlerts = () => {
-        setTimeout(function() {
-            const alerts = document.querySelectorAll('.alert:not([id^="status_message_"])');
-            alerts.forEach(function(alert) {
-                const closeButton = alert.querySelector('.btn-close');
-                if (closeButton) {
-                    closeButton.click();
-                } else {
-                    alert.style.display = 'none';
-                }
-            });
-        }, 5000);
-    };
-    
-    // Initialize all animations and enhancements
-    animateCards();
-    animateStatusBadges();
-    animateButtons();
-    animateOrderHeader();
-    enhanceSpecItems();
-    enhanceTimelineDots();
-    setupAutoDismissAlerts();
+    }, 5000);
 });
 </script>
 

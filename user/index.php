@@ -744,6 +744,11 @@ body {
                             <i class="bi bi-heart me-1"></i>Wishlist
                         </a>
                     </li>
+                    <li class="nav-item">
+    <a class="nav-link" href="custom_order.php">
+        <i class="bi bi-tools me-1"></i>Custom Order
+    </a>
+</li>
                 </ul>
                 <ul class="navbar-nav">
                     <li class="nav-item me-3">

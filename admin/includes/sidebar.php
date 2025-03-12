@@ -41,6 +41,12 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     Penjualan
                 </a>
             </li>
+            <li class="nav-item">
+    <a class="nav-link <?= strpos($current_page, 'custom_order') !== false ? 'active' : ''; ?>" href="../custom_order/index.php">
+        <i class="bi bi-tools"></i>
+        Custom Order
+    </a>
+</li>
         </ul>
 
         <!-- Divider -->

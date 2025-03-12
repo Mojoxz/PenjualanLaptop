@@ -37,20 +37,187 @@ $brands = query("SELECT * FROM tb_merk ORDER BY nama_merk ASC");
     <title>Toko Laptop - Pusat Penjualan Laptop Terpercaya</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <!-- Tambahkan Animate.css untuk animasi -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <style>
         /* General Styles */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* Hero Section */
+        /* Hero Slider Styles */
         .hero-section {
-            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('assets/img/hero.jpg');
+            position: relative;
+            padding: 0;
+            height: 600px;
+            overflow: hidden;
+        }
+        
+        .carousel, .carousel-inner, .carousel-item {
+            height: 100%;
+        }
+        
+        .hero-slide {
+            height: 100%;
             background-size: cover;
             background-position: center;
-            padding: 150px 0;
-            color: white;
             position: relative;
+        }
+        
+        .hero-slide::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+        }
+        
+        .hero-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            z-index: 2;
+        }
+        
+        .carousel-indicators {
+            margin-bottom: 2rem;
+        }
+        
+        .carousel-indicators button {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin: 0 8px;
+            background-color: rgba(255, 255, 255, 0.5);
+            border: none;
+        }
+        
+        .carousel-indicators button.active {
+            background-color: #0d6efd;
+            transform: scale(1.2);
+        }
+        
+        .carousel-control-prev, .carousel-control-next {
+            width: 5%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .hero-section:hover .carousel-control-prev,
+        .hero-section:hover .carousel-control-next {
+            opacity: 0.8;
+        }
+        
+        /* Efek Fade untuk Carousel */
+        .carousel-fade .carousel-item {
+            opacity: 0;
+            transition: opacity 0.6s ease-in-out;
+        }
+        
+        .carousel-fade .carousel-item.active {
+            opacity: 1;
+        }
+        
+        /* Animasi untuk konten */
+        .animate__animated {
+            animation-duration: 1s;
+        }
+        
+        .animate__delay-1s {
+            animation-delay: 0.5s;
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translate3d(0, -30px, 0);
+            }
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translate3d(0, 30px, 0);
+            }
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+        
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translate3d(-30px, 0, 0);
+            }
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+        
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translate3d(30px, 0, 0);
+            }
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+        
+        .animate__fadeInDown {
+            animation-name: fadeInDown;
+        }
+        
+        .animate__fadeInUp {
+            animation-name: fadeInUp;
+        }
+        
+        .animate__fadeInLeft {
+            animation-name: fadeInLeft;
+        }
+        
+        .animate__fadeInRight {
+            animation-name: fadeInRight;
+        }
+        
+        /* Responsif */
+        @media (max-width: 768px) {
+            .hero-section {
+                height: 500px;
+            }
+            
+            .display-4 {
+                font-size: 2.5rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .hero-section {
+                height: 450px;
+            }
+            
+            .display-4 {
+                font-size: 2rem;
+            }
+            
+            .lead {
+                font-size: 1rem;
+            }
         }
 
         /* Features Section */
@@ -221,6 +388,68 @@ $brands = query("SELECT * FROM tb_merk ORDER BY nama_merk ASC");
         .footer-link:hover {
             color: #0d6efd;
         }
+
+        .hover-link:hover {
+            color: #0d6efd !important;
+            transform: translateX(5px);
+            transition: all 0.3s ease;
+        }
+
+        .contact-icon {
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(13, 110, 253, 0.1);
+            border-radius: 50%;
+            color: #0d6efd;
+        }
+
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .social-icon:hover {
+            background-color: #0d6efd;
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .text-primary {
+            color: #0d6efd !important;
+        }
+
+        /* Ripple effect */
+        .cart-button {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.4);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -290,18 +519,122 @@ $brands = query("SELECT * FROM tb_merk ORDER BY nama_merk ASC");
         </div>
     </nav>
 
-    <!-- Hero Section -->
+    <!-- Hero Section with Slider (5 Slides) -->
     <section class="hero-section">
-        <div class="container">
-            <div class="row justify-content-center text-center">
-                <div class="col-lg-8">
-                    <h1 class="display-4 fw-bold mb-4">Selamat Datang di Unesa Laptop</h1>
-                    <p class="lead mb-5">Temukan laptop impian Anda dengan harga terbaik dan kualitas terjamin</p>
-                    <a href="#products" class="btn btn-primary btn-lg px-5 py-3 rounded-pill">
-                        Lihat Produk <i class="bi bi-arrow-right ms-2"></i>
-                    </a>
+        <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
+            <div class="carousel-indicators">
+                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="3" aria-label="Slide 4"></button>
+                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="4" aria-label="Slide 5"></button>
+            </div>
+            
+            <div class="carousel-inner">
+                <!-- Slide 1 -->
+                <div class="carousel-item active" data-bs-interval="5000">
+                    <div class="hero-slide" style="background-image: url('assets/img/hero-slide1.jpg');">
+                        <div class="hero-content">
+                            <div class="container">
+                                <div class="row justify-content-center text-center">
+                                    <div class="col-lg-8">
+                                        <h1 class="display-4 fw-bold mb-4 animate__animated animate__fadeInDown">Selamat Datang di Unesa Laptop</h1>
+                                        <p class="lead mb-5 animate__animated animate__fadeInUp">Temukan laptop impian Anda dengan harga terbaik dan kualitas terjamin</p>
+                                        <a href="#products" class="btn btn-primary btn-lg px-5 py-3 rounded-pill animate__animated animate__fadeInUp animate__delay-1s">
+                                            Lihat Produk <i class="bi bi-arrow-right ms-2"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Slide 2 -->
+                <div class="carousel-item" data-bs-interval="5000">
+                    <div class="hero-slide" style="background-image: url('assets/img/hero-slide2.jpg');">
+                        <div class="hero-content">
+                            <div class="container">
+                                <div class="row justify-content-center text-center">
+                                    <div class="col-lg-8">
+                                        <h1 class="display-4 fw-bold mb-4 animate__animated animate__fadeInDown">Brand Terlengkap</h1>
+                                        <p class="lead mb-5 animate__animated animate__fadeInUp">Pilihan laptop dari berbagai brand terkemuka dengan garansi resmi</p>
+                                        <a href="#categories" class="btn btn-primary btn-lg px-5 py-3 rounded-pill animate__animated animate__fadeInUp animate__delay-1s">
+                                            Lihat Merk <i class="bi bi-arrow-right ms-2"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Slide 3 -->
+                <div class="carousel-item" data-bs-interval="5000">
+                    <div class="hero-slide" style="background-image: url('assets/img/hero-slide3.jpg');">
+                        <div class="hero-content">
+                            <div class="container">
+                                <div class="row justify-content-center text-center">
+                                    <div class="col-lg-8">
+                                        <h1 class="display-4 fw-bold mb-4 animate__animated animate__fadeInLeft">Promo Spesial</h1>
+                                        <p class="lead mb-5 animate__animated animate__fadeInRight">Dapatkan penawaran terbaik untuk laptop gaming, profesional, dan pelajar</p>
+                                        <a href="#products" class="btn btn-danger btn-lg px-5 py-3 rounded-pill animate__animated animate__fadeInUp animate__delay-1s">
+                                            Lihat Promo <i class="bi bi-tag-fill ms-2"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Slide 4 -->
+                <div class="carousel-item" data-bs-interval="5000">
+                    <div class="hero-slide" style="background-image: url('assets/img/hero-slide4.jpg');">
+                        <div class="hero-content">
+                            <div class="container">
+                                <div class="row justify-content-center text-center">
+                                    <div class="col-lg-8">
+                                        <h1 class="display-4 fw-bold mb-4 animate__animated animate__fadeInDown">Laptop Gaming</h1>
+                                        <p class="lead mb-5 animate__animated animate__fadeInUp">Performa tinggi untuk pengalaman gaming tanpa kompromi</p>
+                                        <a href="?kategori=1#products" class="btn btn-success btn-lg px-5 py-3 rounded-pill animate__animated animate__fadeInUp animate__delay-1s">
+                                            Explore Gaming <i class="bi bi-controller ms-2"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Slide 5 -->
+                <div class="carousel-item" data-bs-interval="5000">
+                    <div class="hero-slide" style="background-image: url('assets/img/hero-slide5.jpg');">
+                        <div class="hero-content">
+                            <div class="container">
+                                <div class="row justify-content-center text-center">
+                                    <div class="col-lg-8">
+                                        <h1 class="display-4 fw-bold mb-4 animate__animated animate__fadeInRight">Layanan Premium</h1>
+                                        <p class="lead mb-5 animate__animated animate__fadeInLeft">Konsultasi gratis dan after-sales service terbaik</p>
+                                        <a href="https://wa.me/6285784777172?text=Halo,%20saya%20ingin%20konsultasi%20layanan%20premium%20Unesa%20Laptop" class="btn btn-info btn-lg px-5 py-3 rounded-pill text-white animate__animated animate__fadeInUp animate__delay-1s">
+                                            Hubungi Kami <i class="bi bi-headset ms-2"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+            
+            <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
         </div>
     </section>
 
@@ -595,48 +928,6 @@ $brands = query("SELECT * FROM tb_merk ORDER BY nama_merk ASC");
     </div>
 </footer>
 
-<!-- Add this CSS to your existing styles -->
-<style>
-.hover-link:hover {
-    color: #0d6efd !important;
-    transform: translateX(5px);
-    transition: all 0.3s ease;
-}
-
-.contact-icon {
-    width: 35px;
-    height: 35px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba(13, 110, 253, 0.1);
-    border-radius: 50%;
-    color: #0d6efd;
-}
-
-.social-icon {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
-    color: white;
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.social-icon:hover {
-    background-color: #0d6efd;
-    color: white;
-    transform: translateY(-3px);
-}
-
-.text-primary {
-    color: #0d6efd !important;
-}
-</style>
     <!-- Modal Preview Gambar -->
     <div class="modal fade" id="imageModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -707,180 +998,240 @@ $brands = query("SELECT * FROM tb_merk ORDER BY nama_merk ASC");
             }
         });
 
+        // Script untuk hero carousel
+        document.addEventListener('DOMContentLoaded', function() {
+            // Reset animasi saat slide berubah
+            const heroCarousel = document.getElementById('heroCarousel');
+            
+            if (heroCarousel) {
+                heroCarousel.addEventListener('slide.bs.carousel', function(event) {
+                    // Mendapatkan slide berikutnya
+                    const nextSlide = event.relatedTarget;
+                    
+                    // Reset dan trigger animasi pada slide berikutnya
+                    const animations = nextSlide.querySelectorAll('.animate__animated');
+                    animations.forEach(animation => {
+                        // Reset animasi
+                        animation.style.opacity = '0';
+                        
+                        // Trigger reflow
+                        void animation.offsetWidth;
+                        
+                        // Set opacity kembali untuk memulai animasi
+                        setTimeout(() => {
+                            animation.style.opacity = '';
+                        }, 50);
+                    });
+                });
+                
+                // Event ketika slide sudah aktif sepenuhnya
+                heroCarousel.addEventListener('slid.bs.carousel', function(event) {
+                    const activeSlide = event.relatedTarget;
+                    const animations = activeSlide.querySelectorAll('.animate__animated');
+                    
+                    // Tambahkan kelas animasi yang sesuai
+                    animations.forEach(animation => {
+                        if (animation.classList.contains('display-4') || animation.classList.contains('fw-bold')) {
+                            animation.classList.add('animate__fadeInDown');
+                        } else if (animation.classList.contains('lead')) {
+                            animation.classList.add('animate__fadeInUp');
+                        } else if (animation.classList.contains('btn')) {
+                            animation.classList.add('animate__fadeInUp');
+                            animation.classList.add('animate__delay-1s');
+                        }
+                    });
+                });
+            }
+            
+            // Preload gambar slide untuk performa lebih baik
+            const slideImages = [
+                'assets/img/hero-slide1.jpg',
+                'assets/img/hero-slide2.jpg',
+                'assets/img/hero-slide3.jpg',
+                'assets/img/hero-slide4.jpg',
+                'assets/img/hero-slide5.jpg'
+            ];
+            
+            slideImages.forEach(src => {
+                const img = new Image();
+                img.src = src;
+            });
+        });
+
         // Fungsi untuk animasi smooth scroll dengan easing
-function smoothScroll(target, duration) {
-    const targetElement = document.querySelector(target);
-    const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset;
-    const startPosition = window.pageYOffset;
-    const distance = targetPosition - startPosition;
-    let startTime = null;
+        function smoothScroll(target, duration) {
+            const targetElement = document.querySelector(target);
+            const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset;
+            const startPosition = window.pageYOffset;
+            const distance = targetPosition - startPosition;
+            let startTime = null;
 
-    function animation(currentTime) {
-        if (startTime === null) startTime = currentTime;
-        const timeElapsed = currentTime - startTime;
-        const run = ease(timeElapsed, startPosition, distance, duration);
-        window.scrollTo(0, run);
-        if (timeElapsed < duration) requestAnimationFrame(animation);
-    }
+            function animation(currentTime) {
+                if (startTime === null) startTime = currentTime;
+                const timeElapsed = currentTime - startTime;
+                const run = ease(timeElapsed, startPosition, distance, duration);
+                window.scrollTo(0, run);
+                if (timeElapsed < duration) requestAnimationFrame(animation);
+            }
 
-    // Fungsi easing untuk scroll yang lebih halus
-    function ease(t, b, c, d) {
-        t /= d / 2;
-        if (t < 1) return c / 2 * t * t + b;
-        t--;
-        return -c / 2 * (t * (t - 2) - 1) + b;
-    }
+            // Fungsi easing untuk scroll yang lebih halus
+            function ease(t, b, c, d) {
+                t /= d / 2;
+                if (t < 1) return c / 2 * t * t + b;
+                t--;
+                return -c / 2 * (t * (t - 2) - 1) + b;
+            }
 
-    requestAnimationFrame(animation);
-}
-
-// Inisialisasi smooth scroll untuk semua link internal
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function(e) {
-        e.preventDefault();
-        const target = this.getAttribute('href');
-        smoothScroll(target, 1000);
-    });
-});
-
-// Animasi navbar saat scroll
-let lastScroll = 0;
-const navbar = document.querySelector('.navbar');
-
-window.addEventListener('scroll', () => {
-    const currentScroll = window.pageYOffset;
-    
-    // Tambah/hapus class berdasarkan arah scroll
-    if (currentScroll > lastScroll && currentScroll > 100) {
-        navbar.style.transform = 'translateY(-100%)';
-        navbar.style.transition = 'transform 0.3s ease-in-out';
-    } else {
-        navbar.style.transform = 'translateY(0)';
-        navbar.style.transition = 'transform 0.3s ease-in-out';
-    }
-    
-    // Tambah bayangan saat scroll
-    if (currentScroll > 50) {
-        navbar.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
-    } else {
-        navbar.style.boxShadow = 'none';
-    }
-    
-    lastScroll = currentScroll;
-});
-
-// Animasi fade-in untuk produk
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.classList.add('fade-in');
+            requestAnimationFrame(animation);
         }
-    });
-}, { threshold: 0.1 });
 
-document.querySelectorAll('.product-card').forEach(card => {
-    card.style.opacity = '0';
-    card.style.transform = 'translateY(20px)';
-    card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-    observer.observe(card);
-});
+        // Inisialisasi smooth scroll untuk semua link internal
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = this.getAttribute('href');
+                smoothScroll(target, 1000);
+            });
+        });
 
-// Class untuk animasi fade-in
-document.head.insertAdjacentHTML('beforeend', `
-    <style>
-        .fade-in {
-            opacity: 1 !important;
-            transform: translateY(0) !important;
+        // Animasi navbar saat scroll
+        let lastScroll = 0;
+        const navbar = document.querySelector('.navbar');
+
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            
+            // Tambah/hapus class berdasarkan arah scroll
+            if (currentScroll > lastScroll && currentScroll > 100) {
+                navbar.style.transform = 'translateY(-100%)';
+                navbar.style.transition = 'transform 0.3s ease-in-out';
+            } else {
+                navbar.style.transform = 'translateY(0)';
+                navbar.style.transition = 'transform 0.3s ease-in-out';
+            }
+            
+            // Tambah bayangan saat scroll
+            if (currentScroll > 50) {
+                navbar.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+            } else {
+                navbar.style.boxShadow = 'none';
+            }
+            
+            lastScroll = currentScroll;
+        });
+
+        // Animasi fade-in untuk produk
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.product-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            observer.observe(card);
+        });
+
+        // Class untuk animasi fade-in
+        document.head.insertAdjacentHTML('beforeend', `
+            <style>
+                .fade-in {
+                    opacity: 1 !important;
+                    transform: translateY(0) !important;
+                }
+            </style>
+        `);
+
+        // Animasi loading untuk gambar produk
+        document.querySelectorAll('.product-image').forEach(img => {
+            img.addEventListener('load', function() {
+                this.style.animation = 'fadeIn 0.5s ease-in';
+            });
+        });
+
+        // Tampilkan jumlah item di keranjang dengan animasi
+        function updateCartBadge(count) {
+            const badge = document.querySelector('.badge');
+            if (badge) {
+                badge.style.transform = 'scale(1.2)';
+                badge.textContent = count;
+                setTimeout(() => {
+                    badge.style.transform = 'scale(1)';
+                }, 200);
+            }
         }
-    </style>
-`);
 
-// Animasi loading untuk gambar produk
-document.querySelectorAll('.product-image').forEach(img => {
-    img.addEventListener('load', function() {
-        this.style.animation = 'fadeIn 0.5s ease-in';
-    });
-});
+        // Animasi untuk tombol "Tambah ke Keranjang"
+        document.querySelectorAll('.cart-button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                if (!this.disabled) {
+                    const ripple = document.createElement('div');
+                    ripple.className = 'ripple';
+                    this.appendChild(ripple);
+                    
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    ripple.style.width = ripple.style.height = `${size}px`;
+                    
+                    const x = e.clientX - rect.left - size/2;
+                    const y = e.clientY - rect.top - size/2;
+                    ripple.style.left = `${x}px`;
+                    ripple.style.top = `${y}px`;
+                    
+                    setTimeout(() => ripple.remove(), 600);
+                }
+            });
+        });
 
-// Tampilkan jumlah item di keranjang dengan animasi
-function updateCartBadge(count) {
-    const badge = document.querySelector('.badge');
-    if (badge) {
-        badge.style.transform = 'scale(1.2)';
-        badge.textContent = count;
-        setTimeout(() => {
-            badge.style.transform = 'scale(1)';
-        }, 200);
-    }
-}
+        // Animasi hover untuk kategori
+        document.querySelectorAll('.category-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-10px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
 
-// Animasi untuk tombol "Tambah ke Keranjang"
-document.querySelectorAll('.cart-button').forEach(button => {
-    button.addEventListener('click', function(e) {
-        if (!this.disabled) {
-            const ripple = document.createElement('div');
-            ripple.className = 'ripple';
-            this.appendChild(ripple);
-            
-            const rect = this.getBoundingClientRect();
-            const size = Math.max(rect.width, rect.height);
-            ripple.style.width = ripple.style.height = `${size}px`;
-            
-            const x = e.clientX - rect.left - size/2;
-            const y = e.clientY - rect.top - size/2;
-            ripple.style.left = `${x}px`;
-            ripple.style.top = `${y}px`;
-            
-            setTimeout(() => ripple.remove(), 600);
+        // Lazy loading untuk gambar
+        if ('IntersectionObserver' in window) {
+            const imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.src;
+                        img.classList.remove('lazy');
+                        observer.unobserve(img);
+                    }
+                });
+            });
+
+            document.querySelectorAll('img[data-src]').forEach(img => {
+                imageObserver.observe(img);
+            });
         }
-    });
-});
 
-// Animasi hover untuk kategori
-document.querySelectorAll('.category-card').forEach(card => {
-    card.addEventListener('mouseenter', function() {
-        this.style.transform = 'translateY(-10px)';
-    });
-    
-    card.addEventListener('mouseleave', function() {
-        this.style.transform = 'translateY(0)';
-    });
-});
-
-// Lazy loading untuk gambar
-if ('IntersectionObserver' in window) {
-    const imageObserver = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const img = entry.target;
-                img.src = img.dataset.src;
-                img.classList.remove('lazy');
-                observer.unobserve(img);
+        // Tambahkan efek parallax pada hero section
+        window.addEventListener('scroll', () => {
+            const hero = document.querySelector('.hero-section');
+            if (hero) {
+                const scrolled = window.pageYOffset;
+                hero.style.backgroundPositionY = `${scrolled * 0.5}px`;
             }
         });
-    });
 
-    document.querySelectorAll('img[data-src]').forEach(img => {
-        imageObserver.observe(img);
-    });
-}
-
-// Tambahkan efek parallax pada hero section
-window.addEventListener('scroll', () => {
-    const hero = document.querySelector('.hero-section');
-    if (hero) {
-        const scrolled = window.pageYOffset;
-        hero.style.backgroundPositionY = `${scrolled * 0.5}px`;
-    }
-});
-
-// Animasi loading saat filter diubah
-document.querySelectorAll('.filter-select').forEach(select => {
-    select.addEventListener('change', function() {
-        document.querySelector('.row-cols-1').style.opacity = '0.5';
-        document.querySelector('.row-cols-1').style.transition = 'opacity 0.3s ease';
-    });
-});
+        // Animasi loading saat filter diubah
+        document.querySelectorAll('.filter-select').forEach(select => {
+            select.addEventListener('change', function() {
+                document.querySelector('.row-cols-1').style.opacity = '0.5';
+                document.querySelector('.row-cols-1').style.transition = 'opacity 0.3s ease';
+            });
+        });
     </script>
 </body>
 </html>

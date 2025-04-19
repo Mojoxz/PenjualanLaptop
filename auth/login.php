@@ -250,6 +250,12 @@ if (isset($_POST['login'])) {
                         <i class="bi bi-arrow-left me-2"></i>
                         Kembali ke Halaman Utama
                     </a>
+                    <div class="text-center mb-3">
+    <a href="forgot_password.php" class="text-primary text-decoration-none">
+        <i class="bi bi-question-circle me-1"></i>Lupa Password?
+    </a>
+</div>
+<div class="divider"></div>
                 </div>
             </div>
         </div>

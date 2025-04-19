@@ -11,6 +11,9 @@ UnesaLaptopa adalah platform web penjualan laptop berbasis online. UnesaLaptop s
 # Fungsi Aplikasi UnesaLaptop (User)
 
 1. Login, register dan reset password : user dapat membuat akun jika belum memiliki akun dan login langsung jika sudah mendaftarkan akun. serta user dapat mereset password jika mengalami kelupaan dalam passwordnya.
-2. 
+
+2. Mencari Katalog dan melihat deskripsi katalog : user dapat melihat katalog yang tersedia dalam page awal dan user dapat melihat secara lengkap pada detail product, untuk mengecel spesifikasi lengkap yang sudah tersedia.
+
+3. 
 
 # HEHEHE

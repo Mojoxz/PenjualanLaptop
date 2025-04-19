@@ -421,6 +421,11 @@ body {
     margin-bottom: 1.5rem;
     color: #475569;
     line-height: 1.6;
+    white-space: pre-line;
+    word-wrap: break-word;
+    max-height: 200px; /* Atur tinggi maksimal sesuai kebutuhan */
+    overflow-y: auto; /* Tambahkan scroll jika konten melebihi max-height */
+    padding-right: 10px; /* Memberi jarak untuk scrollbar */
 }
 
 /* Quantity control */

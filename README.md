@@ -44,7 +44,10 @@ Fungsi Aplikasi UnesaLaptop (Admin)
 
 # Profil Developer
 
-![517ab1a8-ba71-47a7-a2c2-d6ed90664381](https://github.com/user-attachments/assets/89b350e0-418e-4cd5-8061-ff03a7a67452) ![706037fb-0914-4ceb-995d-4d59dab620ba](https://github.com/user-attachments/assets/6c38cdfc-a8f4-4ec7-8119-84cf3426282a) ![FOTO B JAS BG MERAH](https://github.com/user-attachments/assets/e3ae82fe-9fbb-4174-996b-1906c0ab4d0a) ![23050794029](https://github.com/user-attachments/assets/d4731f79-7e82-4083-bde7-ca3697cadfbe)
+![1745087850686](https://github.com/user-attachments/assets/5c8a9dfb-886c-4466-b158-9fbb2476b1c6)
+![1745087834595](https://github.com/user-attachments/assets/0fa0f0f0-2a2c-476d-9f8e-b87394c1b9aa)
+![1730770228466](https://github.com/user-attachments/assets/d17e4460-e5e1-4d5b-ba7f-4b8e8649c7a8)
+![1730770077032](https://github.com/user-attachments/assets/1101724c-f93b-4580-b48f-7c71ea9ce5fa)
 
 1.	Firmandhani Setyo Triatmojo      (23050974029) - Pembuat Code
 2.	Rakha Adyatma Ramadhan           (23050974022) - Penulis Laporan

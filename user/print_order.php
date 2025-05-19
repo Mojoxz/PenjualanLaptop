@@ -205,13 +205,13 @@ td {
 <body>
     <div class="print-container">
         <div class="invoice-title">
-            <h2>UNESA LAPTOP</h2>
+            <h2>WARINGIN-IT</h2>
         </div>
 
         <div class="store-info">
             Jl. Contoh No. 123<br>
             Telp: (021) 12345678<br>
-            Email: info@unesalaptop.com
+            Email: info@waringinit.com
         </div>
 
         <div class="invoice-details">

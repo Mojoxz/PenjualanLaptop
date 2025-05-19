@@ -34,7 +34,7 @@ $brands = query("SELECT * FROM tb_merk ORDER BY nama_merk ASC");
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unesa Laptop - Pusat Penjualan Laptop Terpercaya</title>
+    <title>WARINGIN-IT - Pusat Penjualan Laptop Terpercaya</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <!-- Tambahkan Animate.css untuk animasi -->
@@ -457,7 +457,7 @@ $brands = query("SELECT * FROM tb_merk ORDER BY nama_merk ASC");
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
         <div class="container">
             <a class="navbar-brand fw-bold" href="index.php">
-                <i class="bi bi-laptop me-2"></i>Unesa Laptop
+                <i class="bi bi-laptop me-2"></i>WARINGIN-IT
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -538,7 +538,7 @@ $brands = query("SELECT * FROM tb_merk ORDER BY nama_merk ASC");
                             <div class="container">
                                 <div class="row justify-content-center text-center">
                                     <div class="col-lg-8">
-                                        <h1 class="display-4 fw-bold mb-4 animate__animated animate__fadeInDown">Selamat Datang di Unesa Laptop</h1>
+                                        <h1 class="display-4 fw-bold mb-4 animate__animated animate__fadeInDown">Selamat Datang di WARINGIN-IT</h1>
                                         <p class="lead mb-5 animate__animated animate__fadeInUp">Temukan laptop impian Anda dengan harga terbaik dan kualitas terjamin</p>
                                         <a href="#products" class="btn btn-primary btn-lg px-5 py-3 rounded-pill animate__animated animate__fadeInUp animate__delay-1s">
                                             Lihat Produk <i class="bi bi-arrow-right ms-2"></i>
@@ -616,7 +616,7 @@ $brands = query("SELECT * FROM tb_merk ORDER BY nama_merk ASC");
                                     <div class="col-lg-8">
                                         <h1 class="display-4 fw-bold mb-4 animate__animated animate__fadeInRight">Layanan Premium</h1>
                                         <p class="lead mb-5 animate__animated animate__fadeInLeft">Konsultasi gratis dan after-sales service terbaik</p>
-                                        <a href="https://wa.me/6285784777172?text=Halo,%20saya%20ingin%20konsultasi%20layanan%20premium%20Unesa%20Laptop" class="btn btn-info btn-lg px-5 py-3 rounded-pill text-white animate__animated animate__fadeInUp animate__delay-1s">
+                                        <a href="https://wa.me/6285784777172?text=Halo,%20saya%20ingin%20konsultasi%20layanan%20premium%20Waringin%20IT" class="btn btn-info btn-lg px-5 py-3 rounded-pill text-white animate__animated animate__fadeInUp animate__delay-1s">
                                             Hubungi Kami <i class="bi bi-headset ms-2"></i>
                                         </a>
                                     </div>
@@ -842,8 +842,8 @@ $brands = query("SELECT * FROM tb_merk ORDER BY nama_merk ASC");
     <div class="container">
         <div class="row g-4">
             <div class="col-lg-4 mb-4">
-                <h5 class="mb-4 text-primary fw-bold">Tentang Unesa Laptop</h5>
-                <p class="text-white opacity-75">Unesa Laptop adalah destinasi terpercaya untuk membeli laptop berkualitas dengan harga terbaik dan pelayanan yang memuaskan.</p>
+                <h5 class="mb-4 text-primary fw-bold">Tentang WARINGIN-IT</h5>
+                <p class="text-white opacity-75">WARINGIN-IT adalah destinasi terpercaya untuk membeli laptop berkualitas dengan harga terbaik dan pelayanan yang memuaskan.</p>
             </div>
             
             <div class="col-lg-3 mb-4">
@@ -875,7 +875,7 @@ $brands = query("SELECT * FROM tb_merk ORDER BY nama_merk ASC");
                             <i class="bi bi-geo-alt-fill fs-5"></i>
                         </div>
                         <div class="text-white">
-                            Jl. Ketintang, Ketintang, Kec. Gayungan, Surabaya, Jawa Timur 60231
+                        Lantai 2 ITC Surabaya, blok G6 no 3a, 5, 6. Waringin IT
                         </div>
                     </div>
                     
@@ -893,7 +893,7 @@ $brands = query("SELECT * FROM tb_merk ORDER BY nama_merk ASC");
                             <i class="bi bi-envelope-fill fs-5"></i>
                         </div>
                         <div class="text-white">
-                            info@unesalaptop.com
+                            info@WARINGIN-IT.com
                         </div>
                     </div>
 
@@ -922,7 +922,7 @@ $brands = query("SELECT * FROM tb_merk ORDER BY nama_merk ASC");
         
         <div class="text-center">
             <p class="mb-0 text-white opacity-75">
-                &copy; <?= date('Y'); ?> Unesa Laptop. All rights reserved.
+                &copy; <?= date('Y'); ?> WARINGIN-IT. All rights reserved.
             </p>
         </div>
     </div>

@@ -757,7 +757,7 @@ include_once '../includes/header.php';
                             <div>
                                 <div class="text-muted small"><?= date('d M Y, H:i', strtotime($order['updated_at'])) ?></div>
                                 <div class="fw-semibold">Dibatalkan</div>
-                                <p class="mb-0 text-muted small">Custom order telah dibatalkan</p>
+                                <p class="mb-0 text-muted small">Custom order dibatalkan karena pesanan tidak ada</p>
                             </div>
                         </div>
                         <?php endif; ?>

@@ -113,15 +113,15 @@ $details = query($detail_query);
 </head>
 <body>
     <div class="invoice-header">
-        <h2 style="margin: 0;"> UNESA LAPTOP</h2>
+        <h2 style="margin: 0;"> WARINGIN-IT</h2>
         <p style="margin: 5px 0;">Pusat Penjualan Laptop Terpercaya</p>
     </div>
 
     <div class="store-info">
         <p style="margin: 5px 0;">
-            Jl. Unesa Ketintang AX<br>
+            Jl. Lantai 2 ITC Surabaya, blok G6 no 3a, 5, 6. Waringin IT<br>
             Telp: 085784777172<br>
-            Email: unesa@mhs.unesa.ac.id
+            Email: waringin@waringinit.com
         </p>
     </div>
 
@@ -210,7 +210,7 @@ $details = query($detail_query);
 
     <div class="footer">
         <p style="margin: 5px 0;">
-            Terima kasih telah berbelanja di Unesa Laptop<br>
+            Terima kasih telah berbelanja di WARINGIN-IT<br>
             Barang yang sudah dibeli tidak dapat ditukar/dikembalikan
         </p>
         <p style="margin: 5px 0; color: #666; font-size: 12px;">

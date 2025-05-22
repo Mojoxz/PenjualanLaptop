@@ -27,6 +27,7 @@ if (mysqli_num_rows($checkTable) == 0) {
         operating_system VARCHAR(100) NOT NULL,
         additional_specs TEXT,
         budget INT(11) NOT NULL,
+        down_payment INT(11) NOT NULL DEFAULT 0,
         status ENUM('pending', 'processing', 'completed', 'cancelled') NOT NULL DEFAULT 'pending',
         admin_notes TEXT,
         admin_id INT(11),
@@ -133,6 +134,7 @@ if (isset($_POST['submit_order'])) {
     $os = $_POST['os'];
     $additional_specs = $_POST['additional_specs'];
     $budget = (int)str_replace(['Rp', '.', ','], '', $_POST['budget']);
+    $down_payment = (int)str_replace(['Rp', '.', ','], '', $_POST['down_payment']);
     
     // Validasi data
     $errors = [];
@@ -169,15 +171,23 @@ if (isset($_POST['submit_order'])) {
         $errors[] = 'Budget tidak valid!';
     }
     
+    if ($down_payment <= 0) {
+        $errors[] = 'Down Payment tidak valid!';
+    }
+    
+    if ($down_payment >= $budget) {
+        $errors[] = 'Down Payment tidak boleh lebih besar atau sama dengan budget!';
+    }
+    
     // Jika tidak ada error, simpan ke database
     if (empty($errors)) {
         $query = "INSERT INTO tb_custom_orders 
-                 (user_id, ram, storage, processor, vga, screen_size, screen_type, operating_system, additional_specs, budget) 
+                 (user_id, ram, storage, processor, vga, screen_size, screen_type, operating_system, additional_specs, budget, down_payment) 
                  VALUES 
-                 (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                 (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         $stmt = mysqli_prepare($conn, $query);
-        mysqli_stmt_bind_param($stmt, "issssssssi", $user_id, $ram, $storage, $processor, $vga, $screen_size, $screen_type, $os, $additional_specs, $budget);
+        mysqli_stmt_bind_param($stmt, "issssssssii", $user_id, $ram, $storage, $processor, $vga, $screen_size, $screen_type, $os, $additional_specs, $budget, $down_payment);
         
         if (mysqli_stmt_execute($stmt)) {
             $_SESSION['success'] = "Pesanan kustom berhasil dikirim! Admin kami akan menghubungi Anda segera.";
@@ -731,6 +741,43 @@ $recent_orders = query($history_query);
             font-size: 0.9rem;
         }
 
+        /* Bank Account Info Box */
+        .bank-info-box {
+            background: #f0fdf4;
+            border-left: 3px solid var(--success-color);
+            padding: 1rem;
+            border-radius: 0 12px 12px 0;
+            margin-top: 0.5rem;
+        }
+
+        .bank-info-box h6 {
+            color: #065f46;
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .bank-info-box h6 i {
+            margin-right: 0.5rem;
+        }
+
+        .bank-info-box p {
+            color: #166534;
+            margin-bottom: 0.25rem;
+            font-size: 0.9rem;
+        }
+
+        .bank-info-box p:last-child {
+            margin-bottom: 0;
+        }
+
+        .bank-account {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #065f46;
+        }
+
         /* Step Content Animation */
         .step-content {
             display: none;
@@ -1005,12 +1052,33 @@ $recent_orders = query($history_query);
                                     </div>
                                     
                                     <div class="mb-3">
-                                        <label for="budget" class="form-label">Budget</label>
+                                        <label for="budget" class="form-label">Budget Total</label>
                                         <div class="input-group">
                                             <span class="input-group-text">Rp</span>
-                                            <input type="text" class="form-control" id="budget" name="budget" placeholder="Masukkan budget Anda" required>
+                                            <input type="text" class="form-control" id="budget" name="budget" placeholder="Masukkan budget total Anda" required>
                                         </div>
                                         <small class="text-muted">Masukkan budget maksimal yang Anda siapkan untuk laptop ini.</small>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="down_payment" class="form-label">Down Payment (Uang Muka)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">Rp</span>
+                                            <input type="text" class="form-control" id="down_payment" name="down_payment" placeholder="Masukkan jumlah uang muka" required>
+                                        </div>
+                                        <small class="text-muted">Masukkan jumlah uang muka yang akan Anda bayarkan terlebih dahulu. Minimal 30% dari budget total.</small>
+                                        
+                                        <!-- Bank Account Information -->
+                                        <div class="bank-info-box">
+                                            <h6><i class="bi bi-bank"></i>Informasi Rekening Bank</h6>
+                                            <p><strong>Bank BCA:</strong></p>
+                                            <p>No. Rekening: <span class="bank-account">1234567890</span></p>
+                                            <p>Atas Nama: <span class="bank-account">WARINGIN IT STORE</span></p>
+                                            <hr style="margin: 0.5rem 0; border-color: #10b981;">
+                                            <p><strong>Bank Mandiri:</strong></p>
+                                            <p>No. Rekening: <span class="bank-account">0987654321</span></p>
+                                            <p>Atas Nama: <span class="bank-account">WARINGIN IT STORE</span></p>
+                                        </div>
                                     </div>
                                     
                                     <div class="mb-3">
@@ -1026,7 +1094,7 @@ $recent_orders = query($history_query);
                                     
                                     <div class="info-box">
                                         <h6><i class="bi bi-info-circle"></i>Informasi Penting</h6>
-                                        <p>Setelah menekan tombol "Kirim Pesanan", tim kami akan mencarikan laptop yang sesuai dengan spesifikasi yang Anda inginkan. Kami akan menghubungi Anda segera setelah menemukan laptop yang cocok.</p>
+                                        <p>Setelah menekan tombol "Kirim Pesanan", tim kami akan mencarikan laptop yang sesuai dengan spesifikasi yang Anda inginkan. Silakan transfer uang muka ke salah satu rekening yang tertera di atas, kemudian kami akan menghubungi Anda segera setelah menemukan laptop yang cocok.</p>
                                     </div>
                                 </div>
                                 
@@ -1065,6 +1133,10 @@ $recent_orders = query($history_query);
                                     <p><strong>Processor:</strong> <?= $order['processor']; ?></p>
                                     <p><strong>RAM:</strong> <?= $order['ram']; ?></p>
                                     <p><strong>Storage:</strong> <?= $order['storage']; ?></p>
+                                    <p><strong>Budget:</strong> Rp <?= number_format($order['budget'], 0, ',', '.'); ?></p>
+                                    <?php if (isset($order['down_payment']) && $order['down_payment'] > 0) : ?>
+                                        <p><strong>Down Payment:</strong> Rp <?= number_format($order['down_payment'], 0, ',', '.'); ?></p>
+                                    <?php endif; ?>
                                     <p><strong>Tanggal:</strong> <?= date('d M Y', strtotime($order['created_at'])); ?></p>
                                     <a href="custom_order_detail.php?id=<?= $order['order_id']; ?>" class="btn btn-sm btn-outline-primary mt-2">
                                         <i class="bi bi-eye me-1"></i>Lihat Detail
@@ -1135,21 +1207,52 @@ $recent_orders = query($history_query);
                 }
             });
             
-            // Budget formatting
+            // Budget and Down Payment formatting
             const budgetInput = document.getElementById('budget');
+            const downPaymentInput = document.getElementById('down_payment');
             
-            budgetInput.addEventListener('input', function(e) {
-                // Remove all non-digit characters
-                let value = this.value.replace(/\D/g, '');
+            function formatCurrency(input) {
+                input.addEventListener('input', function(e) {
+                    // Remove all non-digit characters
+                    let value = this.value.replace(/\D/g, '');
+                    
+                    // Format with thousand separators
+                    if (value) {
+                        value = parseInt(value).toLocaleString('id-ID');
+                    }
+                    
+                    // Update input value
+                    this.value = value;
+                });
+            }
+            
+            formatCurrency(budgetInput);
+            formatCurrency(downPaymentInput);
+            
+            // Down Payment validation
+            function validateDownPayment() {
+                const budgetValue = parseInt(budgetInput.value.replace(/\D/g, '')) || 0;
+                const downPaymentValue = parseInt(downPaymentInput.value.replace(/\D/g, '')) || 0;
                 
-                // Format with thousand separators
-                if (value) {
-                    value = parseInt(value).toLocaleString('id-ID');
+                if (budgetValue > 0 && downPaymentValue > 0) {
+                    const minDownPayment = budgetValue * 0.3; // 30% minimum
+                    
+                    if (downPaymentValue < minDownPayment) {
+                        downPaymentInput.setCustomValidity(`Down payment minimal 30% dari budget total (Rp ${minDownPayment.toLocaleString('id-ID')})`);
+                        return false;
+                    } else if (downPaymentValue >= budgetValue) {
+                        downPaymentInput.setCustomValidity('Down payment tidak boleh lebih besar atau sama dengan budget total');
+                        return false;
+                    } else {
+                        downPaymentInput.setCustomValidity('');
+                        return true;
+                    }
                 }
-                
-                // Update input value
-                this.value = value;
-            });
+                return true;
+            }
+            
+            downPaymentInput.addEventListener('blur', validateDownPayment);
+            budgetInput.addEventListener('blur', validateDownPayment);
             
             // Stepper functionality
             function goToStep(step) {
@@ -1242,6 +1345,14 @@ $recent_orders = query($history_query);
             
             // Form validation on submit
             form.addEventListener('submit', function(e) {
+                // Validate down payment before submit
+                if (!validateDownPayment()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    goToStep(3); // Go to step 3 where down payment is
+                    return;
+                }
+                
                 if (!this.checkValidity()) {
                     e.preventDefault();
                     e.stopPropagation();

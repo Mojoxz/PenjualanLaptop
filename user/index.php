@@ -15,20 +15,97 @@ $query = "SELECT b.*, k.nama_kategori, m.nama_merk
           LEFT JOIN tb_merk m ON b.merk_id = m.merk_id 
           WHERE b.stok > 0";
 
-// Filter kategori
-if (isset($_GET['kategori']) && $_GET['kategori'] != '') {
-    $kategori_id = $_GET['kategori'];
-    $query .= " AND b.kategori_id = $kategori_id";
+// Inisialisasi array untuk menyimpan kondisi pencarian
+$conditions = [];
+$searchParams = [];
+
+// Ambil parameter pencarian
+$keyword = isset($_GET['keyword']) ? $_GET['keyword'] : '';
+$kategori = isset($_GET['kategori']) ? $_GET['kategori'] : '';
+$merk = isset($_GET['merk']) ? $_GET['merk'] : '';
+$min_price = isset($_GET['min_price']) ? $_GET['min_price'] : '';
+$max_price = isset($_GET['max_price']) ? $_GET['max_price'] : '';
+
+// Pengecekan apakah ada parameter pencarian yang digunakan
+$search_used = !empty($keyword) || !empty($kategori) || !empty($merk) || !empty($min_price) || !empty($max_price);
+
+// Tambahkan kondisi pencarian berdasarkan keyword
+if (!empty($keyword)) {
+    $conditions[] = "(b.nama_barang LIKE ? OR b.jenis_barang LIKE ?)";
+    $searchParams[] = "%{$keyword}%";
+    $searchParams[] = "%{$keyword}%";
 }
 
-// Filter merk
-if (isset($_GET['merk']) && $_GET['merk'] != '') {
-    $merk_id = $_GET['merk'];
-    $query .= " AND b.merk_id = $merk_id";
+// Filter berdasarkan kategori
+if (!empty($kategori)) {
+    $conditions[] = "b.kategori_id = ?";
+    $searchParams[] = $kategori;
 }
+
+// Filter berdasarkan merk
+if (!empty($merk)) {
+    $conditions[] = "b.merk_id = ?";
+    $searchParams[] = $merk;
+}
+
+// Filter berdasarkan rentang harga
+if (!empty($min_price)) {
+    $conditions[] = "b.harga_jual >= ?";
+    $searchParams[] = $min_price;
+}
+
+if (!empty($max_price)) {
+    $conditions[] = "b.harga_jual <= ?";
+    $searchParams[] = $max_price;
+}
+
+// Gabungkan semua kondisi pencarian
+if (!empty($conditions)) {
+    $query .= " AND " . implode(" AND ", $conditions);
+}
+
+// Tambahkan pengurutan
+$query .= " ORDER BY b.nama_barang ASC";
 
 // Eksekusi query
-$laptops = query($query);
+$laptops = [];
+
+if ($search_used && !empty($searchParams)) {
+    // Jika ada parameter pencarian dengan prepared statement
+    $stmt = mysqli_prepare($conn, $query);
+    
+    if ($stmt) {
+        // Buat string tipe parameter untuk bind_param
+        $paramTypes = str_repeat('s', count($searchParams));
+        
+        // Persiapkan array references untuk bind_param
+        $bindParams = array();
+        $bindParams[] = &$paramTypes;
+        
+        // Tambahkan references ke searchParams
+        foreach ($searchParams as $key => $value) {
+            $bindParams[] = &$searchParams[$key];
+        }
+        
+        // Panggil bind_param dengan referensi
+        call_user_func_array(array($stmt, 'bind_param'), $bindParams);
+        
+        // Eksekusi statement
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        
+        // Ambil hasil query
+        while ($row = mysqli_fetch_assoc($result)) {
+            $laptops[] = $row;
+        }
+        
+        mysqli_stmt_close($stmt);
+    }
+} else {
+    // Jika tidak ada pencarian atau pencarian kosong, tampilkan semua produk
+    $laptops = query($query);
+}
+
 $categories = query("SELECT * FROM tb_kategori");
 $brands = query("SELECT * FROM tb_merk");
 $user_id = $_SESSION['user_id'];
@@ -184,6 +261,16 @@ body {
     overflow: hidden;
 }
 
+.search-box {
+    background: white;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.search-box:hover {
+    box-shadow: var(--card-hover-shadow);
+}
+
 .form-select, .form-control {
     border: 2px solid #e9ecef;
     border-radius: 12px;
@@ -251,6 +338,22 @@ body {
 
 .btn-primary:hover i {
     transform: translateX(3px);
+}
+
+.btn-outline-secondary {
+    border: 2px solid #64748b;
+    color: #64748b;
+    background: white;
+    transition: var(--transition);
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-weight: 600;
+}
+
+.btn-outline-secondary:hover {
+    background-color: rgba(100, 116, 139, 0.1);
+    color: #475569;
+    transform: translateY(-3px);
 }
 
 /* Product Card Enhanced */
@@ -680,6 +783,68 @@ body {
     opacity: 1;
 }
 
+/* Search results info */
+.search-results-info {
+    background: linear-gradient(135deg, #e0f2fe, #b3e5fc);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid var(--primary-color);
+}
+
+.search-results-info h5 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.search-results-info p {
+    color: #0277bd;
+    margin-bottom: 0;
+    font-size: 0.95rem;
+}
+
+/* Clear search button */
+.btn-clear-search {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border: none;
+    color: white;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    transition: var(--transition);
+}
+
+.btn-clear-search:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
+    color: white;
+}
+
+/* Empty state for search */
+.empty-search-state {
+    text-align: center;
+    padding: 3rem 0;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+}
+
+.empty-search-state i {
+    font-size: 4rem;
+    color: #cbd5e1;
+    margin-bottom: 1rem;
+}
+
+.empty-search-state h4 {
+    color: #475569;
+    margin-bottom: 1rem;
+}
+
+.empty-search-state p {
+    color: #64748b;
+    margin-bottom: 1.5rem;
+}
+
 /* Media Queries for Better Responsiveness */
 @media (max-width: 767.98px) {
     .product-image-container {
@@ -696,6 +861,10 @@ body {
     
     .fw-bold.text-primary {
         font-size: 1.1rem;
+    }
+    
+    .search-box {
+        padding: 1rem;
     }
 }
 
@@ -734,9 +903,6 @@ body {
                         <a class="nav-link active" href="index.php">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="search.php">Pencarian</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link" href="orders.php">Pesanan Saya</a>
                     </li>
                     <li class="nav-item">
@@ -745,10 +911,10 @@ body {
                         </a>
                     </li>
                     <li class="nav-item">
-    <a class="nav-link" href="custom_order.php">
-        <i class="bi bi-tools me-1"></i>Custom Order
-    </a>
-</li>
+                        <a class="nav-link" href="custom_order.php">
+                            <i class="bi bi-tools me-1"></i>Custom Order
+                        </a>
+                    </li>
                 </ul>
                 <ul class="navbar-nav">
                     <li class="nav-item me-3">
@@ -781,136 +947,245 @@ body {
 
     <!-- Main Content -->
     <div class="container my-4">
-        <!-- Search Box -->
-        <div class="row mb-4">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-body">
-                        <form action="search.php" method="get" class="d-flex">
-                            <input type="text" class="form-control me-2" name="keyword" 
-                                placeholder="Cari laptop berdasarkan nama atau spesifikasi...">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-search me-1"></i> Cari
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Filter Section -->
-        <div class="row mb-4">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-body">
-                        <form action="" method="get" class="row g-3">
-                            <div class="col-md-5">
-                                <select name="kategori" class="form-select">
-                                    <option value="">Semua Kategori</option>
-                                    <?php foreach ($categories as $category) : ?>
-                                        <option value="<?= $category['kategori_id']; ?>" 
-                                                <?= (isset($_GET['kategori']) && $_GET['kategori'] == $category['kategori_id']) ? 'selected' : ''; ?>>
-                                            <?= htmlspecialchars($category['nama_kategori']); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="col-md-5">
-                                <select name="merk" class="form-select">
-                                    <option value="">Semua Merk</option>
-                                    <?php foreach ($brands as $brand) : ?>
-                                        <option value="<?= $brand['merk_id']; ?>"
-                                                <?= (isset($_GET['merk']) && $_GET['merk'] == $brand['merk_id']) ? 'selected' : ''; ?>>
-                                            <?= htmlspecialchars($brand['nama_merk']); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <button type="submit" class="btn btn-primary w-100">
-                                    <i class="bi bi-funnel me-2"></i>Filter
+        <!-- Enhanced Search Box -->
+        <div class="search-box card mb-4">
+            <div class="card-body">
+                <form action="" method="get" id="searchForm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="keyword" class="form-label fw-semibold">
+                                <i class="bi bi-search me-2"></i>Kata Kunci
+                            </label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="keyword" name="keyword" 
+                                       placeholder="Cari laptop berdasarkan nama atau spesifikasi..." 
+                                       value="<?= htmlspecialchars($keyword); ?>">
+                                <button class="btn btn-outline-secondary" type="button" id="clearKeyword">
+                                    <i class="bi bi-x"></i>
                                 </button>
                             </div>
-                        </form>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="kategori_filter" class="form-label fw-semibold">
+                                <i class="bi bi-laptop me-2"></i>Kategori
+                            </label>
+                            <select name="kategori" id="kategori_filter" class="form-select">
+                                <option value="">Semua Kategori</option>
+                                <?php foreach ($categories as $category) : ?>
+                                    <option value="<?= $category['kategori_id']; ?>" 
+                                            <?= ($kategori == $category['kategori_id']) ? 'selected' : ''; ?>>
+                                        <?= htmlspecialchars($category['nama_kategori']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="merk_filter" class="form-label fw-semibold">
+                                <i class="bi bi-tag me-2"></i>Merk
+                            </label>
+                            <select name="merk" id="merk_filter" class="form-select">
+                                <option value="">Semua Merk</option>
+                                <?php foreach ($brands as $brand) : ?>
+                                    <option value="<?= $brand['merk_id']; ?>"
+                                            <?= ($merk == $brand['merk_id']) ? 'selected' : ''; ?>>
+                                        <?= htmlspecialchars($brand['nama_merk']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
                     </div>
-                </div>
+                    
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-currency-dollar me-2"></i>Rentang Harga
+                            </label>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rp</span>
+                                        <input type="number" class="form-control" id="min_price" name="min_price" 
+                                               placeholder="Harga Minimum" value="<?= htmlspecialchars($min_price); ?>">
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="input-group">
+                                        <span class="input-group-text">Rp</span>
+                                        <input type="number" class="form-control" id="max_price" name="max_price" 
+                                               placeholder="Harga Maksimum" value="<?= htmlspecialchars($max_price); ?>">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <div class="w-100">
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary flex-grow-1">
+                                        <i class="bi bi-search me-2"></i>Cari Produk
+                                    </button>
+                                    <button type="button" id="resetButton" class="btn btn-outline-secondary">
+                                        <i class="bi bi-arrow-counterclockwise me-2"></i>Reset
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
 
-        <!-- Products Grid -->
-        <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
-            <?php foreach ($laptops as $laptop) : ?>
-            <div class="col">
-                <div class="card product-card">
-                    <div class="product-image-container">
-                        <img src="../assets/img/barang/<?= htmlspecialchars($laptop['gambar'] ?: 'no-image.jpg'); ?>" 
-                             class="product-image" 
-                             alt="<?= htmlspecialchars($laptop['nama_barang']); ?>">
-                        <?php if ($laptop['stok'] <= 5) : ?>
-                            <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-3">
-                                Stok Terbatas: <?= $laptop['stok']; ?>
-                            </span>
-                        <?php endif; ?>
-                        <!-- Overlay dengan tombol Detail -->
-                        <div class="product-overlay">
-                            <a href="detail_product.php?id=<?= $laptop['barang_id']; ?>" class="btn btn-view-detail">
-                                <i class="bi bi-eye"></i>Lihat Detail
-                            </a>
-                        </div>
+        <!-- Search Results Info -->
+        <?php if ($search_used) : ?>
+            <div class="search-results-info">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5 class="mb-2">
+                            <i class="bi bi-funnel me-2"></i>Hasil Pencarian
+                        </h5>
+                        <p class="mb-2">
+                            Menampilkan <?= count($laptops); ?> produk
+                            <?php if (!empty($keyword)) : ?>
+                                untuk "<strong><?= htmlspecialchars($keyword); ?></strong>"
+                            <?php endif; ?>
+                            <?php 
+                            $filters = [];
+                            if (!empty($kategori)) {
+                                $cat_name = '';
+                                foreach ($categories as $cat) {
+                                    if ($cat['kategori_id'] == $kategori) {
+                                        $cat_name = $cat['nama_kategori'];
+                                        break;
+                                    }
+                                }
+                                $filters[] = "Kategori: " . $cat_name;
+                            }
+                            if (!empty($merk)) {
+                                $brand_name = '';
+                                foreach ($brands as $brand) {
+                                    if ($brand['merk_id'] == $merk) {
+                                        $brand_name = $brand['nama_merk'];
+                                        break;
+                                    }
+                                }
+                                $filters[] = "Merk: " . $brand_name;
+                            }
+                            if (!empty($min_price)) {
+                                $filters[] = "Min: Rp " . number_format($min_price, 0, ',', '.');
+                            }
+                            if (!empty($max_price)) {
+                                $filters[] = "Max: Rp " . number_format($max_price, 0, ',', '.');
+                            }
+                            if (!empty($filters)) {
+                                echo " dengan filter: " . implode(", ", $filters);
+                            }
+                            ?>
+                        </p>
                     </div>
-                    <div class="card-body">
-                        <a href="detail_product.php?id=<?= $laptop['barang_id']; ?>" class="text-decoration-none">
-                            <h5 class="card-title"><?= htmlspecialchars($laptop['nama_barang']); ?></h5>
-                        </a>
-                        <div class="mb-2">
-                            <small class="text-muted">
-                                <i class="bi bi-tag me-1"></i><?= htmlspecialchars($laptop['nama_merk']); ?> | 
-                                <i class="bi bi-laptop me-1"></i><?= htmlspecialchars($laptop['nama_kategori']); ?>
-                            </small>
-                        </div>
-                        <div class="description-container">
-                            <div class="description-text collapsed" id="desc-<?= $laptop['barang_id']; ?>">
-                                <?= htmlspecialchars($laptop['jenis_barang']); ?>
-                            </div>
-                        </div>
-                        
-                        <div class="price-wrapper">
-                            <h6 class="fw-bold text-primary">
-                                Rp <?= number_format($laptop['harga_jual'], 0, ',', '.'); ?>
-                            </h6>
-                        </div>
-                        
-                        <?php if ($laptop['stok'] > 0) : ?>
-                            <div class="action-buttons">
-                                <div class="button-group">
-                                    <form action="cart.php" method="post" class="cart-button">
-                                        <input type="hidden" name="barang_id" value="<?= $laptop['barang_id']; ?>">
-                                        <input type="hidden" name="action" value="add">
-                                        <input type="hidden" name="qty" value="1">
-                                        <button type="submit" class="btn btn-primary w-100">
-                                            <i class="bi bi-cart-plus me-2"></i>Keranjang
-                                        </button>
-                                    </form>
-                                    <button type="button" class="btn btn-outline-primary add-to-wishlist" 
-                                            data-id="<?= $laptop['barang_id']; ?>"
-                                            <?= in_array($laptop['barang_id'], $wishlist_array) ? 'data-in-wishlist="true"' : ''; ?>>
-                                        <i class="bi <?= in_array($laptop['barang_id'], $wishlist_array) ? 'bi-heart-fill' : 'bi-heart'; ?>"></i>
-                                    </button>
-                                </div>
-                                <a href="detail_product.php?id=<?= $laptop['barang_id']; ?>" class="btn btn-success w-100">
-                                    <i class="bi bi-lightning-fill me-2"></i>Beli Sekarang
-                                </a>
-                            </div>
-                        <?php else : ?>
-                            <button class="btn btn-secondary w-100" disabled>
-                                <i class="bi bi-x-circle me-2"></i>Stok Habis
-                            </button>
-                        <?php endif; ?>
-                    </div>
+                    <a href="index.php" class="btn btn-clear-search btn-sm">
+                        <i class="bi bi-x me-1"></i>Hapus Filter
+                    </a>
                 </div>
             </div>
-            <?php endforeach; ?>
-        </div>
+        <?php else : ?>
+            <div class="text-center py-3 mb-4">
+                <h4 class="fw-bold text-primary">
+                    <i class="bi bi-laptop me-2"></i>Semua Produk Laptop
+                </h4>
+                <p class="text-muted mb-0">Temukan laptop terbaik sesuai kebutuhan Anda</p>
+            </div>
+        <?php endif; ?>
+
+        <!-- Products Grid -->
+        <?php if (empty($laptops) && $search_used) : ?>
+            <div class="empty-search-state">
+                <i class="bi bi-search"></i>
+                <h4>Tidak ada hasil yang ditemukan</h4>
+                <p>Tidak menemukan produk yang sesuai dengan kriteria pencarian Anda.<br>
+                   Coba ubah kata kunci atau filter pencarian.</p>
+                <div class="d-flex gap-2 justify-content-center">
+                    <a href="index.php" class="btn btn-primary">
+                        <i class="bi bi-arrow-counterclockwise me-2"></i>Reset Pencarian
+                    </a>
+                    <a href="search.php" class="btn btn-outline-primary">
+                        <i class="bi bi-search me-2"></i>Pencarian Lanjutan
+                    </a>
+                </div>
+            </div>
+        <?php else : ?>
+            <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+                <?php foreach ($laptops as $laptop) : ?>
+                <div class="col">
+                    <div class="card product-card">
+                        <div class="product-image-container">
+                            <img src="../assets/img/barang/<?= htmlspecialchars($laptop['gambar'] ?: 'no-image.jpg'); ?>" 
+                                 class="product-image" 
+                                 alt="<?= htmlspecialchars($laptop['nama_barang']); ?>">
+                            <?php if ($laptop['stok'] <= 5) : ?>
+                                <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-3">
+                                    Stok Terbatas: <?= $laptop['stok']; ?>
+                                </span>
+                            <?php endif; ?>
+                            <!-- Overlay dengan tombol Detail -->
+                            <div class="product-overlay">
+                                <a href="detail_product.php?id=<?= $laptop['barang_id']; ?>" class="btn btn-view-detail">
+                                    <i class="bi bi-eye"></i>Lihat Detail
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <a href="detail_product.php?id=<?= $laptop['barang_id']; ?>" class="text-decoration-none">
+                                <h5 class="card-title"><?= htmlspecialchars($laptop['nama_barang']); ?></h5>
+                            </a>
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-tag me-1"></i><?= htmlspecialchars($laptop['nama_merk']); ?> | 
+                                    <i class="bi bi-laptop me-1"></i><?= htmlspecialchars($laptop['nama_kategori']); ?>
+                                </small>
+                            </div>
+                            <div class="description-container">
+                                <div class="description-text collapsed" id="desc-<?= $laptop['barang_id']; ?>">
+                                    <?= htmlspecialchars($laptop['jenis_barang']); ?>
+                                </div>
+                            </div>
+                            
+                            <div class="price-wrapper">
+                                <h6 class="fw-bold text-primary">
+                                    Rp <?= number_format($laptop['harga_jual'], 0, ',', '.'); ?>
+                                </h6>
+                            </div>
+                            
+                            <?php if ($laptop['stok'] > 0) : ?>
+                                <div class="action-buttons">
+                                    <div class="button-group">
+                                        <form action="cart.php" method="post" class="cart-button">
+                                            <input type="hidden" name="barang_id" value="<?= $laptop['barang_id']; ?>">
+                                            <input type="hidden" name="action" value="add">
+                                            <input type="hidden" name="qty" value="1">
+                                            <button type="submit" class="btn btn-primary w-100">
+                                                <i class="bi bi-cart-plus me-2"></i>Keranjang
+                                            </button>
+                                        </form>
+                                        <button type="button" class="btn btn-outline-primary add-to-wishlist" 
+                                                data-id="<?= $laptop['barang_id']; ?>"
+                                                <?= in_array($laptop['barang_id'], $wishlist_array) ? 'data-in-wishlist="true"' : ''; ?>>
+                                            <i class="bi <?= in_array($laptop['barang_id'], $wishlist_array) ? 'bi-heart-fill' : 'bi-heart'; ?>"></i>
+                                        </button>
+                                    </div>
+                                    <a href="detail_product.php?id=<?= $laptop['barang_id']; ?>" class="btn btn-success w-100">
+                                        <i class="bi bi-lightning-fill me-2"></i>Beli Sekarang
+                                    </a>
+                                </div>
+                            <?php else : ?>
+                                <button class="btn btn-secondary w-100" disabled>
+                                    <i class="bi bi-x-circle me-2"></i>Stok Habis
+                                </button>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -940,6 +1215,44 @@ body {
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Form submit - show loading spinner
+            const searchForm = document.getElementById('searchForm');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            
+            if (searchForm) {
+                searchForm.addEventListener('submit', function() {
+                    loadingOverlay.classList.add('show');
+                });
+            }
+
+            // Clear keyword button
+            const clearKeywordBtn = document.getElementById('clearKeyword');
+            const keywordInput = document.getElementById('keyword');
+            
+            if (clearKeywordBtn && keywordInput) {
+                clearKeywordBtn.addEventListener('click', function() {
+                    keywordInput.value = '';
+                    keywordInput.focus();
+                });
+            }
+            
+            // Reset button
+            const resetButton = document.getElementById('resetButton');
+            
+            if (resetButton) {
+                resetButton.addEventListener('click', function() {
+                    // Clear all form fields
+                    document.getElementById('keyword').value = '';
+                    document.getElementById('kategori_filter').value = '';
+                    document.getElementById('merk_filter').value = '';
+                    document.getElementById('min_price').value = '';
+                    document.getElementById('max_price').value = '';
+                    
+                    // Redirect to index without parameters
+                    window.location.href = 'index.php';
+                });
+            }
+
             // Tambahkan event listener untuk tombol wishlist
             const wishlistButtons = document.querySelectorAll('.add-to-wishlist');
             
@@ -955,7 +1268,6 @@ body {
                     const action = isInWishlist ? 'remove' : 'add';
                     
                     // Tampilkan loading
-                    const loadingOverlay = document.getElementById('loading-overlay');
                     loadingOverlay.classList.add('show');
                     
                     // Simpan referensi ke button untuk digunakan di dalam fetch
@@ -1005,5 +1317,20 @@ body {
                     });
                 });
             });
+
+            // Auto-hide loading overlay after page load
+            window.addEventListener('load', function() {
+                loadingOverlay.classList.remove('show');
+            });
+
+            // Add smooth scrolling for search results
+            <?php if ($search_used) : ?>
+            document.querySelector('.search-results-info').scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+            <?php endif; ?>
         });
     </script>
+</body>
+</html>

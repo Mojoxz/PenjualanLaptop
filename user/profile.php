@@ -22,10 +22,13 @@ if (isset($_POST['update'])) {
     $nama = $_POST['nama'];
     $alamat = $_POST['alamat'];
     $telepon = $_POST['telepon'];
+    $nama_lengkap = $_POST['nama_lengkap'];
+
     
     // Initialize data array
     $data = [
         'nama' => $nama,
+        'nama_lengkap' => $nama_lengkap,
         'alamat' => $alamat,
         'telepon' => $telepon
     ];
@@ -967,14 +970,29 @@ tr:hover .order-id {
                                 </small>
                             </div>
 
-                            <div class="mb-3">
-                                <label for="nama" class="form-label">
-                                    <i class="bi bi-person me-2"></i>Nama Lengkap
-                                </label>
-                                <input type="text" class="form-control" id="nama" name="nama" 
-                                       value="<?= htmlspecialchars($user['nama']); ?>" required>
-                            </div>
-                            
+                           <div class="mb-3">
+    <label for="nama" class="form-label">
+        <i class="bi bi-person-badge me-2"></i>Username
+    </label>
+    <input type="text" class="form-control" id="nama" name="nama" 
+           value="<?= htmlspecialchars($user['nama']); ?>" required>
+    <small class="text-muted">Username untuk login dan identifikasi akun</small>
+</div>
+
+<!-- 4. Tambahkan field nama lengkap (setelah field username) -->
+<div class="mb-3">
+    <label for="nama_lengkap" class="form-label">
+        <i class="bi bi-person-lines-fill me-2"></i>Nama Lengkap
+    </label>
+    <input type="text" class="form-control" id="nama_lengkap" name="nama_lengkap" 
+           value="<?= htmlspecialchars($user['nama_lengkap'] ?? ''); ?>" 
+           placeholder="Masukkan nama lengkap Anda" required>
+    <small class="text-muted">Nama lengkap akan digunakan untuk keperluan formal</small>
+</div>
+
+<!-- 5. Update bagian profile-section untuk menampilkan dengan benar -->
+
+
                             <div class="mb-3">
                                 <label for="password" class="form-label">
                                     <i class="bi bi-lock me-2"></i>Password Baru

@@ -32,6 +32,8 @@ if (empty($order_result)) {
 $order = $order_result[0];
 
 // Status label mapping
+$down_payment = $order['down_payment'];
+
 $status_labels = [
     'pending' => [
         'label' => 'Menunggu',
@@ -159,6 +161,56 @@ function time_elapsed_string($datetime, $full = false) {
             opacity: 0;
             transform: translateY(5px);
             transition: var(--transition);
+        }
+
+
+        /* Revisi Styling untuk down payment (DP) agar seragam dengan Budget */
+        .info-box {
+            background: #f1f5f9;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin-top: 1.5rem;
+            border-left: 3px solid var(--primary-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .budget-title, .info-box-title {
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .budget-title i, .info-box-title i {
+            margin-right: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        .budget-amount, .info-box-content {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0;
+            display: inline-block;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .info-box .amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0;
+            display: inline-block;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
 
         .navbar-brand:hover::after {
@@ -634,6 +686,47 @@ function time_elapsed_string($datetime, $full = false) {
             transition: all 0.3s ease;
         }
 
+
+        .info-box, .budget-box {
+            background: #f1f5f9;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin-top: 1.5rem;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .info-box-title, .budget-title {
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .info-box-title i, .budget-title i {
+            margin-right: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        .info-box-content, .budget-amount {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0;
+        }
+
+        /* Khusus untuk additional specs */
+        .additional-specs-content {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            color: #334155;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            border: 1px solid #e2e8f0;
+        }
+
+
         .status-text {
             font-size: 0.8rem;
             color: #64748b;
@@ -930,6 +1023,7 @@ function time_elapsed_string($datetime, $full = false) {
                             </table>
                         </div>
 
+                        
                         <div class="order-info-section">
                             <div class="section-title">
                                 <i class="bi bi-display"></i>Spesifikasi Layar & OS
@@ -950,13 +1044,25 @@ function time_elapsed_string($datetime, $full = false) {
                             </table>
                         </div>
 
+                        <!-- Menampilkan Uang Muka (DP) dengan tampilan seragam -->
+                     <div class="info-box">
+                            <div class="info-box-title">
+                                <i class="bi bi-cash"></i>Uang Muka (DP)
+                            </div>
+                            <div class="info-box-content amount">
+                                <!-- Menampilkan down payment dengan format Rupiah -->
+                                Rp <?= number_format($down_payment, 0, ',', '.'); ?>
+                            </div>
+                        </div>
+
+                        <!-- Menampilkan Budget dengan tampilan yang sama -->
                         <div class="budget-box">
                             <div class="budget-title">
                                 <i class="bi bi-cash"></i>Budget
                             </div>
                             <div class="budget-amount">Rp <?= number_format($order['budget'], 0, ',', '.') ?></div>
                         </div>
-                    </div>
+
 
                     <div class="col-md-6">
                         <?php if (!empty($order['additional_specs'])): ?>

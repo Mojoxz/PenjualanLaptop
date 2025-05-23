@@ -37,9 +37,18 @@ foreach ($_SESSION['buy_now'] as $barang_id => $qty) {
 }
 
 // Proses checkout
+// Proses checkout
 if (isset($_POST['checkout'])) {
     $pembayaran_id = $_POST['pembayaran_id'];
-    $bayar = str_replace(['Rp', '.', ','], '', $_POST['bayar']);
+    
+    // Jika tidak ada input bayar, setel nilai bayar otomatis dengan total
+    if (empty($_POST['bayar'])) {
+        $bayar = $total;
+    } else {
+        // Jika ada input bayar dari user, gunakan input tersebut
+        $bayar = str_replace(['Rp', '.', ','], '', $_POST['bayar']);
+    }
+    
     $kembalian = $bayar - $total;
 
     // Validasi pembayaran
@@ -167,7 +176,7 @@ if (isset($_POST['checkout'])) {
             
             mysqli_rollback($conn);
             $error = "Gagal memproses pembelian!";
-            
+
         } catch (Exception $e) {
             mysqli_rollback($conn);
             $error = "Error: " . $e->getMessage();
@@ -176,6 +185,7 @@ if (isset($_POST['checkout'])) {
         }
     }
 }
+
 
 // HTML dan kode frontend tetap sama seperti sebelumnya
 ?>
@@ -798,18 +808,6 @@ tfoot td:last-child {
                                 </select>
                                 <div class="invalid-feedback">
                                     Silakan pilih jenis pembayaran.
-                                </div>
-                            </div>
-
-                            <div class="mb-4">
-                                <label class="form-label">Jumlah Bayar</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">Rp</span>
-                                    <input type="text" class="form-control rupiah-input" name="bayar" 
-                                           required data-min="<?= $total ?>">
-                                    <div class="invalid-feedback">
-                                        Jumlah pembayaran tidak boleh kurang dari total belanja.
-                                    </div>
                                 </div>
                             </div>
 

@@ -37,9 +37,18 @@ foreach ($_SESSION['cart'] as $barang_id => $qty) {
 }
 
 // Proses checkout
+// Proses checkout
 if (isset($_POST['checkout'])) {
     $pembayaran_id = $_POST['pembayaran_id'];
-    $bayar = str_replace(['Rp', '.', ','], '', $_POST['bayar']);
+
+    // Jika tidak ada input bayar, setel nilai bayar otomatis dengan total
+    if (empty($_POST['bayar'])) {
+        $bayar = $total;  // Set pembayaran langsung sama dengan total
+    } else {
+        // Jika ada input bayar dari user, gunakan input tersebut
+        $bayar = str_replace(['Rp', '.', ','], '', $_POST['bayar']);
+    }
+
     $kembalian = $bayar - $total;
 
     // Validasi pembayaran
@@ -86,7 +95,7 @@ if (isset($_POST['checkout'])) {
                         }
                     }
                 }
-                
+
                 $data_penjualan = [
                     'admin_id' => $admin_id,
                     'tanggal' => date('Y-m-d H:i:s'),
@@ -98,13 +107,13 @@ if (isset($_POST['checkout'])) {
 
                 if (tambah('tb_penjualan', $data_penjualan)) {
                     $penjualan_id = mysqli_insert_id($conn);
-                    
+
                     // Update tb_pembelian untuk menambahkan referensi ke tb_penjualan
                     $update_pembelian = "UPDATE tb_pembelian SET penjualan_id = $penjualan_id WHERE id_pembelian = $id_pembelian";
                     if (!mysqli_query($conn, $update_pembelian)) {
                         throw new Exception("Gagal menyimpan referensi pembelian: " . mysqli_error($conn));
                     }
-                    
+
                     $all_success = true;
 
                     foreach ($cart_items as $item) {
@@ -145,12 +154,12 @@ if (isset($_POST['checkout'])) {
                         mysqli_commit($conn);
                         // Logging untuk debugging
                         error_log("Pembelian berhasil disimpan dengan ID: $id_pembelian, Penjualan ID: $penjualan_id");
-                        
+
                         // Bersihkan keranjang
                         unset($_SESSION['cart']);
                         // Set pesan sukses dengan informasi kembalian
                         $_SESSION['success'] = "Pembelian berhasil! Order ID: #$id_pembelian. Kembalian Anda: Rp " . number_format($kembalian, 0, ',', '.');
-                        
+
                         // Redirect ke halaman sukses pembelian
                         header("Location: purchase_confirmation.php");
                         exit();
@@ -163,10 +172,10 @@ if (isset($_POST['checkout'])) {
             } else {
                 throw new Exception("Gagal menyimpan data pembelian!");
             }
-            
+
             mysqli_rollback($conn);
             $error = "Gagal memproses pembelian!";
-            
+
         } catch (Exception $e) {
             mysqli_rollback($conn);
             $error = "Error: " . $e->getMessage();
@@ -175,6 +184,7 @@ if (isset($_POST['checkout'])) {
         }
     }
 }
+
 
 // HTML dan kode frontend tetap sama seperti sebelumnya
 ?>
@@ -721,19 +731,6 @@ tfoot td:last-child {
                                     Silakan pilih jenis pembayaran.
                                 </div>
                             </div>
-
-                            <div class="mb-4">
-                                <label class="form-label">Jumlah Bayar</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">Rp</span>
-                                    <input type="text" class="form-control rupiah-input" name="bayar" 
-                                           required data-min="<?= $total ?>">
-                                    <div class="invalid-feedback">
-                                        Jumlah pembayaran tidak boleh kurang dari total belanja.
-                                    </div>
-                                </div>
-                            </div>
-
                             <!-- Kembalian akan ditampilkan di sini secara dinamis -->
                             <div id="kembalian-preview" class="mt-3 p-3 rounded bg-danger-subtle" style="display: none;">
                                 <div class="d-flex justify-content-between align-items-center">

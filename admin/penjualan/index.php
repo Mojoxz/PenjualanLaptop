@@ -588,6 +588,10 @@ include_once '../includes/header.php';
                     <button type="button" class="btn btn-success" onclick="exportExcel()">
                         <i class="bi bi-file-excel me-1"></i> Export Excel
                     </button>
+
+                    <button type="button" class="btn btn-danger" onclick="exportPDF()">
+            <i class="bi bi-file-pdf me-1"></i> Export PDF
+        </button>
                     <!-- Tambahan tombol untuk PhpSpreadsheet jika sudah diinstal -->
                 </div>
             </div>
@@ -754,6 +758,70 @@ include_once '../includes/header.php';
 /**
  * Fungsi untuk export data ke Excel dengan format sederhana
  */
+
+function exportPDF() {
+    // Mendapatkan parameter filter dari URL saat ini
+    var urlParams = new URLSearchParams(window.location.search);
+    var dari = urlParams.get('dari') || '';
+    var sampai = urlParams.get('sampai') || '';
+    
+    // Variabel untuk menyimpan informasi sorting
+    var sort = 'p.tanggal';  // Default sort column
+    var sortOrder = 'DESC';  // Default sort order
+    
+    // Jika DataTables tersedia, ambil informasi sorting dari sana
+    if (typeof jQuery !== 'undefined' && jQuery.fn.DataTable && jQuery.fn.DataTable.isDataTable('#dataTable')) {
+        var dataTable = jQuery('#dataTable').DataTable();
+        var order = dataTable.order();
+        
+        if (order && order.length > 0) {
+            // Pemetaan indeks kolom DataTables ke nama kolom database
+            var columnMapping = [
+                null,           // Kolom No (tidak perlu diurutkan di database)
+                'p.tanggal',    // Kolom Tanggal
+                'u.nama',       // Kolom Pembeli
+                'u.telepon',    // Kolom Telepon
+                'pb.jenis_pembayaran', // Kolom Jenis Pembayaran
+                'p.total',      // Kolom Total
+                'p.bayar',      // Kolom Bayar
+                'p.kembalian',  // Kolom Kembalian
+                'a.nama'        // Kolom Admin
+            ];
+            
+            // Mendapatkan indeks kolom dan arah pengurutan dari DataTables
+            var columnIndex = order[0][0];
+            var direction = order[0][1];
+            
+            // Memastikan indeks kolom valid untuk pemetaan kita
+            if (columnIndex < columnMapping.length && columnMapping[columnIndex]) {
+                sort = columnMapping[columnIndex];
+                sortOrder = direction.toUpperCase();
+            }
+        }
+    }
+    
+    // Membuat URL export PDF
+    var exportUrl = "export_pdf.php?";
+    var params = [];
+    
+    if (dari) {
+        params.push("dari=" + dari);
+    }
+    if (sampai) {
+        params.push("sampai=" + sampai);
+    }
+    
+    // Tambahkan parameter sorting ke URL export
+    params.push("sort=" + sort);
+    params.push("order=" + sortOrder);
+    
+    // Gabungkan semua parameter ke URL
+    exportUrl += params.join('&');
+    
+    // Arahkan ke script export PDF
+    window.location.href = exportUrl;
+}
+
 function exportExcel() {
     // Mendapatkan parameter filter dari URL saat ini
     var urlParams = new URLSearchParams(window.location.search);

@@ -854,6 +854,147 @@ function time_elapsed_string($datetime, $full = false) {
                 flex: 0 0 45%;
                 margin-bottom: 1rem;
             }
+
+            /* Revisi CSS untuk layout yang lebih rapi */
+
+/* Layout grid untuk seluruh konten */
+.main-content-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.left-column, .right-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Styling untuk spesifikasi tambahan agar sejajar dengan processor */
+.additional-specs-section {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid #e2e8f0;
+    height: fit-content;
+}
+
+.additional-specs-section .section-title {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dashed #e2e8f0;
+    display: flex;
+    align-items: center;
+}
+
+.additional-specs-section .section-title i {
+    margin-right: 0.75rem;
+}
+
+.additional-specs-content {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    color: #334155;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    border: 1px solid #e2e8f0;
+    min-height: 100px;
+}
+
+/* Layout untuk budget dan info boxes */
+.info-boxes-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+/* Perbaikan styling untuk budget dan DP boxes */
+.budget-box, .info-box.dp-box {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid #e2e8f0;
+    position: relative;
+    overflow: hidden;
+}
+
+.budget-box::before, .info-box.dp-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--primary-gradient);
+}
+
+.budget-title, .dp-title {
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    font-size: 0.95rem;
+}
+
+.budget-title i, .dp-title i {
+    margin-right: 0.75rem;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+
+.budget-amount, .dp-amount {
+    font-size: 1.75rem;
+    font-weight: 700;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 0;
+    line-height: 1.2;
+}
+
+/* Responsive adjustments */
+@media (max-width: 991.98px) {
+    .main-content-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .info-boxes-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .budget-amount, .dp-amount {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .main-content-grid {
+        gap: 1rem;
+    }
+    
+    .additional-specs-section {
+        padding: 1rem;
+    }
+    
+    .budget-box, .info-box.dp-box {
+        padding: 1rem;
+    }
+    
+    .budget-amount, .dp-amount {
+        font-size: 1.25rem;
+    }
+}
+            
         }
     </style>
 </head>
@@ -997,182 +1138,182 @@ function time_elapsed_string($datetime, $full = false) {
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="order-info-section">
-                            <div class="section-title">
-                                <i class="bi bi-cpu"></i>Spesifikasi Komputer
-                            </div>
-                            <table class="specs-table">
-                                <tr>
-                                    <td class="spec-label">Processor</td>
-                                    <td class="spec-value"><?= htmlspecialchars($order['processor']) ?></td>
-                                </tr>
-                                <tr>
-                                    <td class="spec-label">RAM</td>
-                                    <td class="spec-value"><?= htmlspecialchars($order['ram']) ?></td>
-                                </tr>
-                                <tr>
-                                    <td class="spec-label">Storage</td>
-                                    <td class="spec-value"><?= htmlspecialchars($order['storage']) ?></td>
-                                </tr>
-                                <tr>
-                                    <td class="spec-label">VGA/GPU</td>
-                                    <td class="spec-value"><?= htmlspecialchars($order['vga']) ?></td>
-                                </tr>
-                            </table>
-                        </div>
+<div class="main-content-grid">
+    <!-- Kolom Kiri - Spesifikasi Utama dan Budget/DP -->
+    <div class="left-column">
+        <div class="order-info-section">
+            <div class="section-title">
+                <i class="bi bi-cpu"></i>Spesifikasi Komputer
+            </div>
+            <table class="specs-table">
+                <tr>
+                    <td class="spec-label">Processor</td>
+                    <td class="spec-value"><?= htmlspecialchars($order['processor']) ?></td>
+                </tr>
+                <tr>
+                    <td class="spec-label">RAM</td>
+                    <td class="spec-value"><?= htmlspecialchars($order['ram']) ?></td>
+                </tr>
+                <tr>
+                    <td class="spec-label">Storage</td>
+                    <td class="spec-value"><?= htmlspecialchars($order['storage']) ?></td>
+                </tr>
+                <tr>
+                    <td class="spec-label">VGA/GPU</td>
+                    <td class="spec-value"><?= htmlspecialchars($order['vga']) ?></td>
+                </tr>
+            </table>
+        </div>
 
-                        
-                        <div class="order-info-section">
-                            <div class="section-title">
-                                <i class="bi bi-display"></i>Spesifikasi Layar & OS
-                            </div>
-                            <table class="specs-table">
-                                <tr>
-                                    <td class="spec-label">Ukuran Layar</td>
-                                    <td class="spec-value"><?= htmlspecialchars($order['screen_size']) ?></td>
-                                </tr>
-                                <tr>
-                                    <td class="spec-label">Tipe Layar</td>
-                                    <td class="spec-value"><?= htmlspecialchars($order['screen_type']) ?></td>
-                                </tr>
-                                <tr>
-                                    <td class="spec-label">Sistem Operasi</td>
-                                    <td class="spec-value"><?= htmlspecialchars($order['operating_system']) ?></td>
-                                </tr>
-                            </table>
-                        </div>
+        <div class="order-info-section">
+            <div class="section-title">
+                <i class="bi bi-display"></i>Spesifikasi Layar & OS
+            </div>
+            <table class="specs-table">
+                <tr>
+                    <td class="spec-label">Ukuran Layar</td>
+                    <td class="spec-value"><?= htmlspecialchars($order['screen_size']) ?></td>
+                </tr>
+                <tr>
+                    <td class="spec-label">Tipe Layar</td>
+                    <td class="spec-value"><?= htmlspecialchars($order['screen_type']) ?></td>
+                </tr>
+                <tr>
+                    <td class="spec-label">Sistem Operasi</td>
+                    <td class="spec-value"><?= htmlspecialchars($order['operating_system']) ?></td>
+                </tr>
+            </table>
+        </div>
 
-                        <!-- Menampilkan Uang Muka (DP) dengan tampilan seragam -->
-                     <div class="info-box">
-                            <div class="info-box-title">
-                                <i class="bi bi-cash"></i>Uang Muka (DP)
-                            </div>
-                            <div class="info-box-content amount">
-                                <!-- Menampilkan down payment dengan format Rupiah -->
-                                Rp <?= number_format($down_payment, 0, ',', '.'); ?>
-                            </div>
-                        </div>
+        <!-- Container untuk Budget dan DP -->
+        <div class="info-boxes-container">
+            <!-- Budget Box -->
+            <div class="budget-box">
+                <div class="budget-title">
+                    <i class="bi bi-wallet2"></i>Budget
+                </div>
+                <div class="budget-amount">Rp <?= number_format($order['budget'], 0, ',', '.') ?></div>
+            </div>
 
-                        <!-- Menampilkan Budget dengan tampilan yang sama -->
-                        <div class="budget-box">
-                            <div class="budget-title">
-                                <i class="bi bi-cash"></i>Budget
-                            </div>
-                            <div class="budget-amount">Rp <?= number_format($order['budget'], 0, ',', '.') ?></div>
-                        </div>
-
-
-                    <div class="col-md-6">
-                        <?php if (!empty($order['additional_specs'])): ?>
-                            <div class="order-info-section">
-                                <div class="section-title">
-                                    <i class="bi bi-list-check"></i>Spesifikasi Tambahan
-                                </div>
-                                <div class="p-3 bg-light rounded">
-                                    <?= nl2br(htmlspecialchars($order['additional_specs'])) ?>
-                                </div>
-                            </div>
-                        <?php endif; ?>
-
-                        <?php if (!empty($order['admin_notes']) && ($order['status'] == 'processing' || $order['status'] == 'completed' || $order['status'] == 'cancelled')): ?>
-                            <div class="admin-notes">
-                                <div class="admin-notes-header">
-                                    <div class="admin-notes-title">
-                                        <i class="bi bi-chat-left-text"></i>Catatan dari Admin
-                                    </div>
-                                    <div class="admin-notes-date">
-                                        <?= date('d F Y, H:i', strtotime($order['updated_at'])) ?>
-                                    </div>
-                                </div>
-                                <div class="admin-notes-content">
-                                    <?= nl2br(htmlspecialchars($order['admin_notes'])) ?>
-                                </div>
-
-                                <?php if ($admin_data): ?>
-                                    <div class="admin-info">
-                                        <div class="admin-avatar">
-                                            <?= strtoupper(substr($admin_data['nama'], 0, 1)) ?>
-                                        </div>
-                                        <div>
-                                            <div class="admin-name"><?= htmlspecialchars($admin_data['nama']) ?></div>
-                                            <div class="admin-role">Admin</div>
-                                        </div>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        <?php endif; ?>
-
-                        <div class="order-info-section">
-                            <div class="section-title">
-                                <i class="bi bi-clock-history"></i>Status & Riwayat
-                            </div>
-                            <div class="timeline">
-                                <div class="timeline-item <?= ($order['status'] != 'cancelled') ? 'completed' : 'cancelled' ?>">
-                                    <div class="timeline-dot"></div>
-                                    <div class="timeline-content">
-                                        <div class="timeline-title">
-                                            Pesanan Dibuat
-                                            <span class="timeline-time"><?= date('d F Y, H:i', strtotime($order['created_at'])) ?></span>
-                                        </div>
-                                        <p class="timeline-description">
-                                            Anda telah berhasil membuat pesanan kustom dan sedang menunggu review dari admin.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <?php if ($order['status'] == 'processing' || $order['status'] == 'completed'): ?>
-                                    <div class="timeline-item <?= ($order['status'] == 'completed') ? 'completed' : 'active' ?>">
-                                        <div class="timeline-dot"></div>
-                                        <div class="timeline-content">
-                                            <div class="timeline-title">
-                                                Sedang Diproses
-                                                <span class="timeline-time"><?= date('d F Y, H:i', strtotime($order['updated_at'])) ?></span>
-                                            </div>
-                                            <p class="timeline-description">
-                                                Admin sedang mencarikan laptop yang sesuai dengan spesifikasi yang Anda inginkan.
-                                            </p>
-                                        </div>
-                                    </div>
-                                <?php endif; ?>
-
-                                <?php if ($order['status'] == 'completed'): ?>
-                                    <div class="timeline-item completed">
-                                        <div class="timeline-dot"></div>
-                                        <div class="timeline-content">
-                                            <div class="timeline-title">
-                                                Pesanan Selesai
-                                                <span class="timeline-time"><?= date('d F Y, H:i', strtotime($order['updated_at'])) ?></span>
-                                            </div>
-                                            <p class="timeline-description">
-                                                Pesanan Anda telah selesai diproses. Silakan cek email atau WhatsApp Anda untuk informasi lebih lanjut.
-                                            </p>
-                                        </div>
-                                    </div>
-                                <?php endif; ?>
-
-                                <?php if ($order['status'] == 'cancelled'): ?>
-                                    <div class="timeline-item cancelled">
-                                        <div class="timeline-dot"></div>
-                                        <div class="timeline-content">
-                                            <div class="timeline-title">
-                                                Pesanan Dibatalkan
-                                                <span class="timeline-time"><?= date('d F Y, H:i', strtotime($order['updated_at'])) ?></span>
-                                            </div>
-                                            <p class="timeline-description">
-                                                Pesanan Anda telah dibatalkan. Silakan lihat catatan admin untuk informasi lebih lanjut.
-                                            </p>
-                                        </div>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
+            <!-- DP Box -->
+            <div class="info-box dp-box">
+                <div class="dp-title">
+                    <i class="bi bi-cash-coin"></i>Uang Muka (DP)
+                </div>
+                <div class="dp-amount">
+                    Rp <?= number_format($down_payment, 0, ',', '.'); ?>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Kolom Kanan - Spesifikasi Tambahan, Admin Notes, dan Timeline -->
+    <div class="right-column">
+        <?php if (!empty($order['additional_specs'])): ?>
+            <div class="additional-specs-section">
+                <div class="section-title">
+                    <i class="bi bi-list-check"></i>Spesifikasi Tambahan
+                </div>
+                <div class="additional-specs-content">
+                    <?= nl2br(htmlspecialchars($order['additional_specs'])) ?>
+                </div>
+            </div>
+        <?php endif; ?>
+
+        <?php if (!empty($order['admin_notes']) && ($order['status'] == 'processing' || $order['status'] == 'completed' || $order['status'] == 'cancelled')): ?>
+            <div class="admin-notes">
+                <div class="admin-notes-header">
+                    <div class="admin-notes-title">
+                        <i class="bi bi-chat-left-text"></i>Catatan dari Admin
+                    </div>
+                    <div class="admin-notes-date">
+                        <?= date('d F Y, H:i', strtotime($order['updated_at'])) ?>
+                    </div>
+                </div>
+                <div class="admin-notes-content">
+                    <?= nl2br(htmlspecialchars($order['admin_notes'])) ?>
+                </div>
+
+                <?php if ($admin_data): ?>
+                    <div class="admin-info">
+                        <div class="admin-avatar">
+                            <?= strtoupper(substr($admin_data['nama'], 0, 1)) ?>
+                        </div>
+                        <div>
+                            <div class="admin-name"><?= htmlspecialchars($admin_data['nama']) ?></div>
+                            <div class="admin-role">Admin</div>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
+
+        <div class="order-info-section">
+            <div class="section-title">
+                <i class="bi bi-clock-history"></i>Status & Riwayat
+            </div>
+            <div class="timeline">
+                <div class="timeline-item <?= ($order['status'] != 'cancelled') ? 'completed' : 'cancelled' ?>">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">
+                            Pesanan Dibuat
+                            <span class="timeline-time"><?= date('d F Y, H:i', strtotime($order['created_at'])) ?></span>
+                        </div>
+                        <p class="timeline-description">
+                            Anda telah berhasil membuat pesanan kustom dan sedang menunggu review dari admin.
+                        </p>
+                    </div>
+                </div>
+
+                <?php if ($order['status'] == 'processing' || $order['status'] == 'completed'): ?>
+                    <div class="timeline-item <?= ($order['status'] == 'completed') ? 'completed' : 'active' ?>">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">
+                                Sedang Diproses
+                                <span class="timeline-time"><?= date('d F Y, H:i', strtotime($order['updated_at'])) ?></span>
+                            </div>
+                            <p class="timeline-description">
+                                Admin sedang mencarikan laptop yang sesuai dengan spesifikasi yang Anda inginkan.
+                            </p>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+                <?php if ($order['status'] == 'completed'): ?>
+                    <div class="timeline-item completed">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">
+                                Pesanan Selesai
+                                <span class="timeline-time"><?= date('d F Y, H:i', strtotime($order['updated_at'])) ?></span>
+                            </div>
+                            <p class="timeline-description">
+                                Pesanan Anda telah selesai diproses. Silakan cek email atau WhatsApp Anda untuk informasi lebih lanjut.
+                            </p>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+                <?php if ($order['status'] == 'cancelled'): ?>
+                    <div class="timeline-item cancelled">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">
+                                Pesanan Dibatalkan
+                                <span class="timeline-time"><?= date('d F Y, H:i', strtotime($order['updated_at'])) ?></span>
+                            </div>
+                            <p class="timeline-description">
+                                Pesanan Anda telah dibatalkan. Silakan lihat catatan admin untuk informasi lebih lanjut.
+                            </p>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+</div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

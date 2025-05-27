@@ -25,15 +25,21 @@ if (isset($_GET['dari']) && isset($_GET['sampai'])) {
 }
 
 // Query untuk mendapatkan data penjualan
-$query = "SELECT p.*, a.nama as admin_name, u.nama as nama_user, u.telepon, pb.jenis_pembayaran,
+$query = "SELECT p.*, a.nama as admin_name, u.nama as nama_user, u.telepon, pb.jenis_pembayaran, m.nama_merk as merk,
           (SELECT SUM(dp.subtotal) FROM tb_detail_penjualan dp WHERE dp.penjualan_id = p.penjualan_id) as total_penjualan 
           FROM tb_penjualan p 
           LEFT JOIN tb_admin a ON p.admin_id = a.admin_id
           LEFT JOIN tb_pembelian pmb ON p.id_pembelian = pmb.id_pembelian
           LEFT JOIN tb_user u ON pmb.user_id = u.user_id
           LEFT JOIN tb_pembayaran pb ON pmb.pembayaran_id = pb.pembayaran_id
+          LEFT JOIN tb_detail_penjualan dp ON p.penjualan_id = dp.penjualan_id
+          LEFT JOIN tb_barang b ON dp.barang_id = b.barang_id
+          LEFT JOIN tb_merk m ON b.merk_id = m.merk_id
           $where
+          GROUP BY p.penjualan_id
           ORDER BY p.tanggal DESC";
+
+          
 $penjualan = query($query);
 
 // Query untuk mendapatkan total produk terjual
@@ -686,6 +692,7 @@ include_once '../includes/header.php';
                             <th>Tanggal</th>
                             <th>Pembeli</th>
                             <th>Telepon</th>
+                            <th>Merk</th>
                             <th>Jenis Pembayaran</th>
                             <th>Total</th>
                             <th>Bayar</th>
@@ -709,6 +716,13 @@ include_once '../includes/header.php';
                                 <i class="bi bi-telephone text-muted me-1"></i>
                                 <?= htmlspecialchars($row['telepon'] ?? '-'); ?>
                             </td>
+
+                                    <td>
+            <span class="badge bg-light">
+                <?= htmlspecialchars($row['merk'] ?? '-'); ?>
+            </span>
+        </td>
+
                             <td>
                                 <span class="badge bg-info">
                                     <?= htmlspecialchars($row['jenis_pembayaran'] ?? '-'); ?>
@@ -844,6 +858,7 @@ function exportExcel() {
                 'p.tanggal',    // Kolom Tanggal
                 'u.nama',       // Kolom Pembeli
                 'u.telepon',    // Kolom Telepon
+                'm.nana_merk', // Kolom Merk
                 'pb.jenis_pembayaran', // Kolom Jenis Pembayaran
                 'p.total',      // Kolom Total
                 'p.bayar',      // Kolom Bayar

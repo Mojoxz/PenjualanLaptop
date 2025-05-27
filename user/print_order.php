@@ -17,8 +17,8 @@ if (!isset($_GET['id'])) {
 $order_id = $_GET['id'];
 $user_id = $_SESSION['user_id'];
 
-// Ambil data pembelian
-$order = query("SELECT p.*, pb.jenis_pembayaran, u.nama as nama_user, u.alamat, u.telepon 
+// Ambil data pembelian (tambahkan nama_lengkap)
+$order = query("SELECT p.*, pb.jenis_pembayaran, u.nama as nama_user, u.nama_lengkap, u.alamat, u.telepon 
                FROM tb_pembelian p
                LEFT JOIN tb_pembayaran pb ON p.pembayaran_id = pb.pembayaran_id
                LEFT JOIN tb_user u ON p.user_id = u.user_id 
@@ -194,13 +194,6 @@ td {
     }
 }
     </style>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Struk Pembelian #<?= $order_id ?></title>
-    <!-- CSS Anda disini -->
 </head>
 <body>
     <div class="print-container">
@@ -224,7 +217,7 @@ td {
 
         <div class="customer-info">
             <span class="section-title">Informasi Pembeli</span>
-            <div>Nama: <?= $order['nama_user'] ?></div>
+            <div>Nama: <?= !empty($order['nama_lengkap']) ? $order['nama_lengkap'] : $order['nama_user'] ?></div>
             <div>Telp: <?= $order['telepon'] ?></div>
             <div>Alamat: <?= $order['alamat'] ?></div>
         </div>

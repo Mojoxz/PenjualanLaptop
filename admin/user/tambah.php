@@ -60,12 +60,11 @@ if (isset($_POST['tambah'])) {
     }
 
     if (!$error) {
-        // Hash password
-        $password_hash = password_hash($password, PASSWORD_DEFAULT);
+
         
         $data = [
             'username' => $username,
-            'password' => $password_hash,
+            'password' => $password,
             'nama' => $nama,
             'email' => $email,
             'role' => $role,

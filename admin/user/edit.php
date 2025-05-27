@@ -91,8 +91,7 @@ if (isset($_POST['edit'])) {
         
         if (!$error) {
             // Hash password
-            $password_hash = password_hash($password, PASSWORD_DEFAULT);
-            $data['password'] = $password_hash;
+            $data['password'] = $password;
         }
     }
 
